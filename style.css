@@ -1545,6 +1545,7 @@ select:focus {
     margin-bottom: 0 !important;
     /* Override inline style if any */
 }
+
 /* ==================== DASHBOARD IMPROVEMENTS ==================== */
 /* Split Layout for Announcement & Market */
 .dashboard-split-grid {
@@ -1564,7 +1565,7 @@ select:focus {
 /* Fix height for admin lists to avoid page getting too long */
 #admin-announcement-list,
 #admin-market-list {
-    max-height: 500px;
+    max-height: 320px;
     overflow-y: auto;
     padding-right: 0.5rem;
 }
