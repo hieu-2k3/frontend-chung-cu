@@ -1905,29 +1905,33 @@ async function loadMarketItems() {
                 const canDelete = isOwner || isAdmin;
 
                 const deleteBtn = canDelete ? `
-                    <button onclick="deleteMarketItem('${item._id}')" style="position: absolute; top: 10px; right: 10px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                    <button onclick="event.stopPropagation(); deleteMarketItem('${item._id}')" style="position: absolute; top: 10px; right: 10px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 ` : '';
 
                 return `
-                    <div class="glass-panel market-card" style="position: relative; padding: 0.8rem;">
+                    <div class="glass-panel market-card market-card-small market-card-clickable" 
+                         style="position: relative;" 
+                         onclick="viewMarketDetail(\`${item._id}\`)">
                         ${deleteBtn}
                         <img src="${item.image}" alt="Item">
-                        <h4 style="margin: 0.5rem 0 0.2rem 0; color: white; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</h4>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <span class="price-tag">${item.price.toLocaleString()} đ</span>
-                            <span style="font-size: 0.8rem; color: #aaa;">${new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
+                        <h4 class="text-truncate" style="margin: 0.5rem 0 0.2rem 0; color: white; font-size: 1rem;">${item.title}</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                            <span class="price-tag" style="font-size: 0.8rem;">${item.price.toLocaleString()} đ</span>
                         </div>
-                        <div style="font-size: 0.9rem; color: #ddd; display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fa-solid fa-phone" style="font-size: 0.8rem;"></i> ${item.contactPhone}
+                        <div class="text-truncate" style="font-size: 0.8rem; color: #94a3b8;">
+                            <i class="fa-solid fa-phone" style="font-size: 0.7rem;"></i> ${item.contactPhone}
                         </div>
-                        <p style="font-size: 0.85rem; color: #bbb; margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        <p class="text-truncate" style="font-size: 0.8rem; color: #64748b; margin-top: 0.3rem;">
                             ${item.description || 'Không có mô tả'}
                         </p>
                     </div>
                 `;
             };
+
+            // Inject detailed data into window for easy access
+            window.allMarketItems = items;
 
             if (userList) {
                 userList.innerHTML = items.length ? items.map(renderCard).join('') : '<div style="text-align: center; color: #aaa; width: 100%; padding: 2rem;">Chưa có tin nào.</div>';
@@ -1940,6 +1944,54 @@ async function loadMarketItems() {
         console.error("Lỗi tải chợ:", err);
     }
 }
+
+function viewMarketDetail(id) {
+    const item = (window.allMarketItems || []).find(i => i._id === id);
+    if (!item) return;
+
+    const modal = document.getElementById('mkt-detail-modal');
+    const body = document.getElementById('mkt-detail-body');
+    if (!modal || !body) return;
+
+    body.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+            <img src="${item.image}" style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 0.75rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4);" alt="Product">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
+                <h3 style="color: white; font-size: 1.5rem; margin: 0; line-height: 1.2;">${item.title}</h3>
+                <span class="price-tag" style="font-size: 1.2rem; padding: 0.4rem 1rem;">${item.price.toLocaleString()} đ</span>
+            </div>
+
+            <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                <div>
+                    <span style="display: block; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Liên hệ</span>
+                    <strong style="color: #10b981; font-size: 1.1rem;"><i class="fa-solid fa-phone"></i> ${item.contactPhone}</strong>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Ngày đăng</span>
+                    <strong style="color: white;">${new Date(item.createdAt).toLocaleDateString('vi-VN')}</strong>
+                </div>
+            </div>
+
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 1rem;">
+                <span style="display: block; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem;">Mô tả sản phẩm</span>
+                <div style="white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem;">${item.description || 'Không có mô tả chi tiết cho sản phẩm này.'}</div>
+            </div>
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+}
+
+// Close Market Detail Modal
+const closeMktDetailBtn = document.getElementById('close-mkt-detail');
+if (closeMktDetailBtn) {
+    closeMktDetailBtn.onclick = () => document.getElementById('mkt-detail-modal').classList.add('hidden');
+}
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('mkt-detail-modal');
+    if (e.target === modal) modal.classList.add('hidden');
+});
 
 // Post Item Logic
 window.openMarketModal = () => {

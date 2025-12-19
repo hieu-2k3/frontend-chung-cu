@@ -1695,3 +1695,45 @@ select:focus {
     overflow-y: auto;
     padding-right: 10px;
 }
+
+/* Market Detail Modal & Small Cards */
+.market-card-small {
+    min-width: 260px !important;
+    max-width: 260px !important;
+    padding: 0.75rem !important;
+}
+
+.market-card-small img {
+    height: 140px !important;
+}
+
+.market-card-small h4 {
+    font-size: 1rem !important;
+    margin-top: 0.4rem !important;
+}
+
+.market-card-clickable {
+    cursor: pointer;
+}
+
+#mkt-detail-modal .modal-content {
+    max-width: 550px;
+    width: 95%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#mkt-detail-body {
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+#mkt-detail-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+#mkt-detail-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
