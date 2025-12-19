@@ -616,24 +616,21 @@
                             <div class="onboarding-icon">
                                 <i class="fa-solid fa-hand-sparkles"></i>
                             </div>
-                            <h2>Chào mừng, ${(currentUser.name || 'Cư dân mới')}!</h2>
-                            <p>
-                                Tài khoản <b>${userPhone}</b> của bạn đã sẵn sàng. Hiện tại Ban quản lý đang kiểm tra thông tin để gán bạn vào đúng số phòng của mình.
-                            </p>
-                            <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
-                                <p style="color: #6ee7b7; margin-bottom: 0; font-size: 0.9rem;">
-                                    <i class="fa-solid fa-circle-check"></i> Trong lúc chờ đợi, bạn vẫn có thể sử dụng các tính năng cộng đồng:
+                            <div class="onboarding-content">
+                                <h2>Chào mừng, ${(currentUser.name || 'Cư dân mới')}!</h2>
+                                <p>
+                                    Tài khoản <b>${userPhone}</b> của bạn đã sẵn sàng. Hiện tại Ban quản lý đang kiểm tra thông tin để gán bạn vào đúng số phòng của mình.
+                                </p>
+                                <div class="onboarding-features">
+                                    <div class="feature-tag active"><i class="fa-solid fa-bullhorn"></i> Tin tức</div>
+                                    <div class="feature-tag active"><i class="fa-solid fa-store"></i> Chợ cư dân</div>
+                                    <div class="feature-tag"><i class="fa-solid fa-camera"></i> Đăng tin</div>
+                                    <div class="feature-tag"><i class="fa-solid fa-wrench"></i> Bảo trì</div>
+                                </div>
+                                <p style="font-size: 0.8rem; margin-top: 1.5rem; color: #64748b; margin-bottom: 0;">
+                                    <i class="fa-solid fa-info-circle"></i> Cần hỗ trợ ngay? Hãy liên hệ văn phòng tầng 1.
                                 </p>
                             </div>
-                            <div class="onboarding-features">
-                                <div class="feature-tag active"><i class="fa-solid fa-bullhorn"></i> Xem tin tức tòa nhà</div>
-                                <div class="feature-tag active"><i class="fa-solid fa-store"></i> Xem Chợ cư dân</div>
-                                <div class="feature-tag"><i class="fa-solid fa-camera"></i> Đăng tin rao vặt</div>
-                                <div class="feature-tag"><i class="fa-solid fa-wrench"></i> Gửi yêu cầu bảo trì</div>
-                            </div>
-                            <p style="font-size: 0.85rem; margin-top: 2rem; color: #64748b;">
-                                <i class="fa-solid fa-info-circle"></i> Nếu cần hỗ trợ ngay, vui lòng liên hệ Admin tại văn phòng tầng 1.
-                            </p>
                         </div>
                     `;
                     return;
