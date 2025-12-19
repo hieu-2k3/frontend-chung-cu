@@ -1562,12 +1562,29 @@ select:focus {
     }
 }
 
-/* Fix height for admin lists to avoid page getting too long */
-#admin-announcement-list,
-#admin-market-list {
+/* Fix height for announcement list */
+#admin-announcement-list {
     max-height: 320px;
     overflow-y: auto;
     padding-right: 0.5rem;
+}
+
+/* Horizontal Scroll for Market List (Admin) */
+#admin-market-list {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+#admin-market-list .glass-panel {
+    min-width: 300px;
+    max-width: 300px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    margin-bottom: 0 !important;
 }
 
 /* Custom scrollbar for these lists */
