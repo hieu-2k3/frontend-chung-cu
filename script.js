@@ -1547,6 +1547,7 @@ const maintDetailBody = document.getElementById('maint-detail-body');
 const closeMaintDetailBtn = document.getElementById('close-maint-detail');
 
 async function loadMaintenanceRequests() {
+    console.log("Loading maintenance requests...");
     try {
         const token = localStorage.getItem('authToken');
         const res = await fetch(`${API_URL}/maintenance`, {
@@ -1554,11 +1555,18 @@ async function loadMaintenanceRequests() {
         });
         const data = await res.json();
         if (data.success) {
-            maintenanceRequests = data.data;
+            maintenanceRequests = data.data || [];
+            console.log(`Loaded ${maintenanceRequests.length} maintenance requests`);
+            renderMaintenanceList();
+        } else {
+            console.error("Server error loading maintenance:", data.message);
+            maintenanceRequests = [];
             renderMaintenanceList();
         }
     } catch (e) {
         console.error("Lỗi tải phản hồi:", e);
+        maintenanceRequests = [];
+        renderMaintenanceList();
     }
 }
 
