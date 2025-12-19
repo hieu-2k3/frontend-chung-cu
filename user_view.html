@@ -1253,27 +1253,28 @@
                     return;
                 }
 
-                // Find user's room
-                const apartmentsRes = await fetch(`${API_URL}/apartments`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const apartmentsData = await apartmentsRes.json();
-                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                const myRoom = apartmentsData.data.find(room =>
-                    room.residents && room.residents.some(r => r.phoneLogin === currentUser.phone)
-                );
-
-                const data = {
-                    title: document.getElementById('mkt-title').value,
-                    price: parseFloat(document.getElementById('mkt-price').value),
-                    contactPhone: document.getElementById('mkt-phone').value,
-                    description: document.getElementById('mkt-desc').value,
-                    roomName: myRoom ? `Phòng ${myRoom.id}` : (currentUser.role === 'admin' ? 'BQL' : 'N/A'),
-                    image: currentMarketMedia
-                };
-
                 try {
                     const token = localStorage.getItem('authToken');
+
+                    // Find user's room info
+                    const apartmentsRes = await fetch(`${API_URL}/apartments`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const apartmentsData = await apartmentsRes.json();
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    const myRoom = (apartmentsData.data || []).find(room =>
+                        room.residents && room.residents.some(r => r.phoneLogin === currentUser.phone)
+                    );
+
+                    const data = {
+                        title: document.getElementById('mkt-title').value,
+                        price: parseFloat(document.getElementById('mkt-price').value),
+                        contactPhone: document.getElementById('mkt-phone').value,
+                        description: document.getElementById('mkt-desc').value,
+                        roomName: myRoom ? `Phòng ${myRoom.id}` : (currentUser.role === 'admin' ? 'BQL' : 'N/A'),
+                        image: currentMarketMedia
+                    };
+
                     const res = await fetch(`${API_URL}/market`, {
                         method: 'POST',
                         headers: {
@@ -1294,6 +1295,7 @@
                         alert("Lỗi: " + result.message);
                     }
                 } catch (err) {
+                    console.error(err);
                     alert("Lỗi kết nối");
                 } finally {
                     btn.innerHTML = originalText;
