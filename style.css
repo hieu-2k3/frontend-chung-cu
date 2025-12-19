@@ -1974,3 +1974,52 @@ select:focus {
 .modal-body-scroll::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+/* Contract Form Styles */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.premium-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.premium-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.premium-form input,
+.premium-form select,
+.premium-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: rgba(0,0,0,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.premium-form input:focus,
+.premium-form select:focus,
+.premium-form textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background: rgba(0,0,0,0.3);
+}
+
+.premium-form input[readonly] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
