@@ -173,13 +173,24 @@
 
 <!-- Contract Detail Modal -->
 <div id="contract-detail-modal" class="modal hidden">
-    <div class="modal-content glass-panel" style="max-width: 600px;">
-        <span class="close-modal" id="close-contract-detail-modal">&times;</span>
-        <div class="modal-header">
-            <h2><i class="fa-solid fa-file-lines"></i> Chi Tiết Hợp Đồng</h2>
+    <div class="modal-content glass-panel"
+        style="max-width: 600px; width: 95%; max-height: 80vh; display: flex; flex-direction: column;">
+        <span class="close-modal" id="close-contract-detail-modal" style="z-index: 10;">&times;</span>
+        <div class="modal-header" style="flex-shrink: 0; margin-bottom: 1rem;">
+            <h2><i class="fa-solid fa-file-contract"></i> Chi Tiết Hợp Đồng</h2>
         </div>
-        <div class="modal-body" id="contract-detail-content">
+
+        <div class="modal-body" id="contract-detail-content"
+            style="overflow-y: auto; flex: 1; padding-right: 0.5rem; scrollbar-width: thin;">
             <!-- Content will be loaded dynamically -->
+        </div>
+
+        <div
+            style="margin-top: 1rem; flex-shrink: 0; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; display: flex; justify-content: center; gap: 1rem;">
+            <button class="btn-primary" onclick="window.print()"
+                style="padding: 0.5rem 1.5rem; width: auto; font-size: 0.9rem;">
+                <i class="fa-solid fa-print"></i> In Hợp Đồng
+            </button>
         </div>
     </div>
 </div>

@@ -277,39 +277,74 @@ window.viewContractDetail = async function (contractId) {
     const content = document.getElementById('contract-detail-content');
     const now = new Date();
     const endDate = new Date(contract.endDate);
+    const startDate = new Date(contract.startDate);
     const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
 
+    // Status Badge Logic
+    let statusBadge = '';
+    if (contract.status === 'active') {
+        if (daysLeft < 0) {
+            statusBadge = '<span class="status-badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">Đã hết hạn</span>';
+        } else if (daysLeft <= 30) {
+            statusBadge = `<span class="status-badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">Sắp hết hạn (${daysLeft} ngày)</span>`;
+        } else {
+            statusBadge = '<span class="status-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">Đang hoạt động</span>';
+        }
+    } else {
+        statusBadge = '<span class="status-badge" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8;">Đã kết thúc</span>';
+    }
+
     content.innerHTML = `
-        <div style="padding: 1rem;">
-            <h3 style="color: var(--accent-blue); margin-bottom: 1rem;">
-                <i class="fa-solid fa-user"></i> Thông tin khách thuê
-            </h3>
-            <p><strong>Họ tên:</strong> ${contract.tenantName}</p>
-            <p><strong>SĐT:</strong> ${contract.tenantPhone}</p>
-            ${contract.tenantIdCard ? `<p><strong>CMND/CCCD:</strong> ${contract.tenantIdCard}</p>` : ''}
-            
-            <h3 style="color: var(--accent-green); margin: 1.5rem 0 1rem;">
-                <i class="fa-solid fa-money-bill-wave"></i> Thông tin tài chính
-            </h3>
-            <p><strong>Tiền thuê:</strong> ${contract.monthlyRent.toLocaleString()}đ/tháng</p>
-            <p><strong>Tiền cọc:</strong> ${contract.deposit.toLocaleString()}đ</p>
-            <p><strong>Trạng thái cọc:</strong> ${contract.depositPaid ? '✅ Đã nhận' : '❌ Chưa nhận'}</p>
-            
-            <h3 style="color: var(--accent-amber); margin: 1.5rem 0 1rem;">
-                <i class="fa-solid fa-calendar-days"></i> Thời hạn
-            </h3>
-            <p><strong>Bắt đầu:</strong> ${new Date(contract.startDate).toLocaleDateString('vi-VN')}</p>
-            <p><strong>Kết thúc:</strong> ${endDate.toLocaleDateString('vi-VN')}</p>
-            <p><strong>Thời hạn:</strong> ${contract.duration} tháng</p>
-            <p><strong>Còn lại:</strong> ${daysLeft > 0 ? daysLeft + ' ngày' : 'Đã hết hạn'}</p>
-            
+        <div style="padding: 0.5rem;">
+            <!-- Header Info -->
+            <div style="text-align: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px dashed rgba(255,255,255,0.2);">
+                <div style="font-size: 1.2rem; font-weight: bold; color: var(--accent-blue); margin-bottom: 0.25rem;">PHÒNG ${contract.roomName}</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Mã HĐ: #${contract._id.substr(-8).toUpperCase()}</div>
+                <div style="margin-top: 0.5rem;">${statusBadge}</div>
+            </div>
+
+            <!-- Tenant & Duration Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 0.5rem;">
+                    <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-user"></i> Khách thuê
+                    </div>
+                    <div style="font-weight: 500; font-size: 1rem;">${contract.tenantName}</div>
+                    <div style="color: var(--text-secondary); margin-top: 0.25rem;">${contract.tenantPhone}</div>
+                    ${contract.tenantIdCard ? `<div style="color: var(--text-secondary); font-size: 0.9rem;">CCCD: ${contract.tenantIdCard}</div>` : ''}
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 0.5rem;">
+                     <div style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-calendar-check"></i> Thời hạn
+                    </div>
+                    <div>${startDate.toLocaleDateString('vi-VN')} - ${endDate.toLocaleDateString('vi-VN')}</div>
+                     <div style="color: var(--text-secondary); margin-top: 0.25rem;">${contract.duration} tháng</div>
+                </div>
+            </div>
+
+            <!-- Financial Box -->
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="color: var(--text-secondary);">Giá thuê:</span>
+                    <span style="color: var(--accent-green); font-weight: bold; font-size: 1.1rem;">${contract.monthlyRent.toLocaleString()} đ/tháng</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-secondary);">Đặt cọc:</span>
+                    <span style="font-weight: 500;">${contract.deposit.toLocaleString()} đ ${contract.depositPaid ? '<i class="fa-solid fa-check-circle" style="color: var(--accent-green); margin-left: 5px;" title="Đã cọc"></i>' : '<i class="fa-solid fa-circle-xmark" style="color: #ef4444; margin-left: 5px;" title="Chưa cọc"></i>'}</span>
+                </div>
+            </div>
+
+            <!-- Terms -->
             ${contract.terms && contract.terms.length > 0 ? `
-                <h3 style="color: var(--text-secondary); margin: 1.5rem 0 1rem;">
-                    <i class="fa-solid fa-list-check"></i> Điều khoản
-                </h3>
-                <ul style="padding-left: 1.5rem;">
-                    ${contract.terms.map(term => `<li>${term}</li>`).join('')}
-                </ul>
+                <div>
+                    <h4 style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                        <i class="fa-solid fa-list-check"></i> Điều khoản bổ sung
+                    </h4>
+                    <ul style="background: rgba(0,0,0,0.2); padding: 1rem 1rem 1rem 2rem; border-radius: 0.5rem; margin: 0;">
+                        ${contract.terms.map(term => `<li style="margin-bottom: 0.25rem;">${term}</li>`).join('')}
+                    </ul>
+                </div>
             ` : ''}
         </div>
     `;
