@@ -393,16 +393,22 @@
 
     <!-- Contract Detail Modal -->
     <div id="user-contract-modal" class="modal hidden">
-        <div class="modal-content glass-panel" style="max-width: 600px;">
-            <span class="close-modal" id="close-user-contract">&times;</span>
-            <div class="modal-header">
+        <div class="modal-content glass-panel"
+            style="max-width: 550px; width: 95%; max-height: 80vh; display: flex; flex-direction: column;">
+            <span class="close-modal" id="close-user-contract" style="z-index: 10;">&times;</span>
+            <div class="modal-header" style="flex-shrink: 0; margin-bottom: 1rem;">
                 <h2><i class="fa-solid fa-file-signature"></i> Chi Tiết Hợp Đồng</h2>
             </div>
-            <div class="modal-body" id="user-contract-content">
+
+            <div class="modal-body" id="user-contract-content"
+                style="overflow-y: auto; flex: 1; padding-right: 0.5rem; scrollbar-width: thin;">
                 <!-- Content injected via JS -->
             </div>
-            <div style="margin-top: 1.5rem; text-align: center;">
-                <button class="btn-primary" onclick="window.print()" style="padding: 0.6rem 2rem; width: auto;">
+
+            <div
+                style="margin-top: 1rem; text-align: center; flex-shrink: 0; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button class="btn-primary" onclick="window.print()"
+                    style="padding: 0.5rem 1.5rem; width: auto; font-size: 0.9rem;">
                     <i class="fa-solid fa-print"></i> In Hợp Đồng
                 </button>
             </div>
