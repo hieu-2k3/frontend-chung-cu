@@ -313,7 +313,7 @@
                 </div>
             </div>
 
-            <h2 class="section-title" style="margin-top: 3rem;">Thông Tin Phòng & Cư Dân</h2>
+            <h2 class="section-title" id="room-directory-title" style="margin-top: 3rem;">Thông Tin Phòng & Cư Dân</h2>
             <div id="directory-grid" class="residents-directory">
                 <!-- Room entries will be loaded here -->
                 <div class="empty-state">
@@ -511,6 +511,8 @@
     <script>
         // --- Shared Auth Logic ---
         const API_URL = 'https://apartment-api-3jnu.onrender.com/api';
+        window.userHasRoom = false; // Global flag
+
 
         // Check Auth
         (function checkAuth() {
@@ -584,22 +586,57 @@
                 );
 
                 if (!myRoom) {
+                    window.userHasRoom = false;
                     console.warn("No room found for phone:", userPhone);
+                } else {
+                    window.userHasRoom = true;
+                }
+
+                // Refresh restricted sections if needed (though they usually load after this)
+                if (!window.userHasRoom) {
+                    renderRestrictedPlaceholder('user-invoice-list', 'hóa đơn');
+                    renderRestrictedPlaceholder('user-maintenance-list', 'yêu cầu');
+                }
+
+                if (!myRoom) {
+                    // Hide the standard section title since we're showing a special onboarding card
+                    const dirTitle = document.getElementById('room-directory-title');
+                    if (dirTitle) dirTitle.style.display = 'none';
+
                     container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fa-solid fa-house-user fa-3x" style="margin-bottom: 1rem; color: var(--text-secondary)"></i>
-                            <h3 style="margin-bottom: 0.5rem; color: #fff;">Chưa được gán phòng!</h3>
-                            <p>Số điện thoại <b>${userPhone}</b> chưa được gán vào căn hộ nào trong hệ thống.</p>
-                            <p style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-secondary)">
-                                Vui lòng liên hệ Admin tòa nhà để cập nhật thông tin thành viên.
+                        <div class="onboarding-card">
+                            <div class="onboarding-icon">
+                                <i class="fa-solid fa-hand-sparkles"></i>
+                            </div>
+                            <h2>Chào mừng, ${(userData.name || 'Cư dân mới')}!</h2>
+                            <p>
+                                Tài khoản <b>${userPhone}</b> của bạn đã sẵn sàng. Hiện tại Ban quản lý đang kiểm tra thông tin để gán bạn vào đúng số phòng của mình.
+                            </p>
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
+                                <p style="color: #6ee7b7; margin-bottom: 0; font-size: 0.9rem;">
+                                    <i class="fa-solid fa-circle-check"></i> Trong lúc chờ đợi, bạn vẫn có thể sử dụng các tính năng cộng đồng:
+                                </p>
+                            </div>
+                            <div class="onboarding-features">
+                                <div class="feature-tag active"><i class="fa-solid fa-bullhorn"></i> Xem tin tức tòa nhà</div>
+                                <div class="feature-tag active"><i class="fa-solid fa-store"></i> Chợ cư dân & Rao vặt</div>
+                                <div class="feature-tag"><i class="fa-solid fa-file-invoice-dollar"></i> Quản lý hóa đơn</div>
+                                <div class="feature-tag"><i class="fa-solid fa-wrench"></i> Gửi yêu cầu bảo trì</div>
+                            </div>
+                            <p style="font-size: 0.85rem; margin-top: 2rem; color: #64748b;">
+                                <i class="fa-solid fa-info-circle"></i> Nếu cần hỗ trợ ngay, vui lòng liên hệ Admin tại văn phòng tầng 1.
                             </p>
                         </div>
-                        `;
+                    `;
                     return;
                 }
 
                 container.innerHTML = '';
-                document.querySelector('.section-title').textContent = 'Thông Tin Phòng Của Bạn';
+                const mainTitle = document.getElementById('room-directory-title');
+                if (mainTitle) {
+                    mainTitle.style.display = 'block';
+                    mainTitle.textContent = 'Thông Tin Phòng Của Bạn';
+                }
 
                 // Generate Residents List HTML
                 const residentsHtml = myRoom.residents.map(resident => `
@@ -640,7 +677,27 @@
             }
         }
 
+        // Helper to render restricted placeholder
+        function renderRestrictedPlaceholder(elementId, typeName) {
+            const list = document.getElementById(elementId);
+            if (!list) return;
+            const colSpan = elementId.includes('invoice') ? 4 : 5;
+            const icon = elementId.includes('invoice') ? 'fa-file-invoice-dollar' : 'fa-wrench';
+
+            list.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; padding:3rem; color: var(--text-secondary);">
+                <div style="opacity: 0.6;">
+                    <i class="fa-solid ${icon} fa-3x" style="margin-bottom: 1.5rem; display: block; color: var(--accent-blue);"></i>
+                    <h3 style="color: white; margin-bottom: 0.5rem;">Tính năng này chưa sẵn sàng</h3>
+                    <p>Bạn sẽ xem được ${typeName} sau khi Ban quản lý gán bạn vào căn hộ.</p>
+                </div>
+            </td></tr>`;
+        }
+
         async function loadInvoices() {
+            if (!window.userHasRoom) {
+                renderRestrictedPlaceholder('user-invoice-list', 'hóa đơn');
+                return;
+            }
             try {
                 const token = localStorage.getItem('authToken');
                 const res = await fetch(`${API_URL}/invoices`, {
@@ -670,7 +727,11 @@
                         list.appendChild(tr);
                     });
                 } else {
-                    list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem;">Bạn chưa có hóa đơn nào.</td></tr>';
+                    const msg = result.message || "Bạn chưa có hóa đơn nào.";
+                    list.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color: var(--text-secondary);">
+                        <i class="fa-solid fa-receipt fa-2x" style="display:block; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        ${msg === 'Chưa có thông tin phòng' ? 'Tính năng này sẽ khả dụng sau khi bạn được gán phòng.' : msg}
+                    </td></tr>`;
                 }
             } catch (err) {
                 console.error("Lỗi hđ:", err);
@@ -808,6 +869,10 @@
         let currentMaintData = [];
 
         async function loadMaintenance() {
+            if (!window.userHasRoom) {
+                renderRestrictedPlaceholder('user-maintenance-list', 'yêu cầu');
+                return;
+            }
             try {
                 const token = localStorage.getItem('authToken');
                 const res = await fetch(`${API_URL}/maintenance`, {
@@ -849,7 +914,11 @@
                         list.appendChild(tr);
                     });
                 } else {
-                    list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem;">Bạn chưa gửi yêu cầu nào.</td></tr>';
+                    const msg = result.message || "Bạn chưa có yêu cầu nào.";
+                    list.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color: var(--text-secondary);">
+                        <i class="fa-solid fa-wrench fa-2x" style="display:block; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        ${msg === 'Chưa có thông tin phòng' ? 'Tính năng này sẽ khả dụng sau khi bạn được gán phòng.' : msg}
+                    </td></tr>`;
                 }
             } catch (err) {
                 console.error(err);
