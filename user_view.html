@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Cư Dân - Quản Lý Chung Cư</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .user-dashboard {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 1rem;
+        }
+
+        .residents-directory {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .room-entry {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .room-entry:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .room-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .member-count {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+        }
+
+        .member-list {
+            list-style: none;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .member-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 500;
+            display: block;
+        }
+
+        .member-role {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Receipt Styles */
+        .receipt {
+            padding: 1rem;
+            color: var(--text-primary);
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px dashed var(--card-border);
+            padding-bottom: 1rem;
+        }
+
+        .receipt-header h3 {
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .receipt-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .receipt-total {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--accent-green);
+        }
+
+        .payment-qr {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--card-border);
+            text-align: center;
+        }
+
+        .payment-qr p {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .payment-qr small {
+            color: var(--accent-blue);
+            display: block;
+        }
+
+        .paid-stamp {
+            margin: 2rem auto 0;
+            width: fit-content;
+            padding: 0.5rem 2rem;
+            border: 4px solid #10b981;
+            color: #10b981;
+            font-size: 1.5rem;
+            font-weight: 900;
+            transform: rotate(-10deg);
+            border-radius: 0.5rem;
+            opacity: 0.8;
+            letter-spacing: 2px;
+        }
+
+        .btn-check {
+            padding: 0.5rem 1rem;
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-check:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.pending {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .status-badge.paid {
+            background: rgba(16, 185, 129, 0.1);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Market Post Modal -->
+    <div id="market-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <span class="close-modal" id="close-market-modal">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-store"></i> Đăng Tin Rao Vặt</h2>
+            </div>
+            <div class="modal-body">
+                <form id="market-form" class="premium-form">
+                    <div class="form-group">
+                        <label>Tiêu đề món đồ</label>
+                        <input type="text" id="mkt-title" placeholder="Ví dụ: Tủ lạnh mini cũ..." required>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Giá bán (đ)</label>
+                            <input type="number" id="mkt-price" placeholder="500000" required>
+                        </div>
+                        <div class="form-group">
+                            <label>SĐT Liên hệ</label>
+                            <input type="text" id="mkt-phone" placeholder="09xxxx" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Mô tả chi tiết</label>
+                        <textarea id="mkt-desc" rows="3"
+                            style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; padding: 0.5rem;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Ảnh thực tế (Bắt buộc)</label>
+                        <div
+                            style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 0.5rem; border: 1px dashed rgba(255,255,255,0.2);">
+                            <input type="file" id="mkt-file" accept="image/*" required
+                                style="border: none; padding: 0.5rem;">
+                            <div id="mkt-preview" style="margin-top: 0.5rem; display: none; text-align: center;"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary w-100">
+                        <i class="fa-solid fa-paper-plane"></i> Đăng Ngay
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-left">
+                <h1><i class="fa-solid fa-building-user"></i> Chung Cư Hạnh Phúc</h1>
+                <p class="subtitle">Danh sách cư dân</p>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <span id="user-name">Cư dân</span>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                </button>
+            </div>
+        </header>
+
+        <div class="user-dashboard">
+            <!-- Announcements Section -->
+            <div id="user-announcement-section" style="margin-bottom: 2rem; display: none;">
+                <h2 class="section-title"><i class="fa-solid fa-bullhorn"></i> Bảng Tin Chung</h2>
+                <div id="user-announcement-list"></div>
+            </div>
+            <!-- Market Section -->
+            <div class="glass-panel" style="margin-bottom: 2rem;">
+                <div class="section-header"
+                    style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="section-title" style="margin-bottom: 0; border: none; padding: 0;"><i
+                            class="fa-solid fa-store"></i> Chợ Cư Dân</h2>
+                    <button class="btn-primary" onclick="openMarketModal()" style="width: auto;">
+                        <i class="fa-solid fa-camera"></i> Đăng tin
+                    </button>
+                </div>
+                <div id="user-market-list" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem;">
+                    <div style="text-align: center; color: #aaa; width: 100%; padding: 2rem;">Đang tải tin...</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Thông Tin Phòng & Cư Dân</h2>
+            <div id="directory-grid" class="residents-directory">
+                <!-- Room entries will be loaded here -->
+                <div class="empty-state">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top: 1rem">Đang tải dữ liệu...</p>
+                </div>
+            </div>
+
+            <!-- Invoices Section -->
+            <h2 class="section-title" style="margin-top: 3rem;">Hóa Đơn Của Bạn</h2>
+            <div class="glass-panel" style="margin-top: 1rem; padding: 1.5rem;">
+                <div class="table-container">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr
+                                style="text-align: left; color: var(--text-secondary); border-bottom: 2px solid var(--card-border);">
+                                <th style="padding: 1rem;">Tháng/Năm</th>
+                                <th style="padding: 1rem;">Tổng Tiền</th>
+                                <th style="padding: 1rem;">Trạng Thái</th>
+                                <th style="padding: 1rem;">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-invoice-list">
+                            <!-- Invoices will be here -->
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding: 2rem;">Đang tải hóa đơn...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Maintenance Section -->
+            <h2 class="section-title" style="margin-top: 3rem;">Bảo Trì & Phản Hồi</h2>
+            <div class="glass-panel" style="margin-top: 1rem; padding: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Gửi yêu cầu sửa chữa hoặc góp ý cho
+                        tòa
+                        nhà.</p>
+                    <button class="btn-primary" onclick="openMaintenanceModal()"
+                        style="width: auto; padding: 0.5rem 1.5rem;">
+                        <i class="fa-solid fa-plus"></i> Tạo Yêu Cầu
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr
+                                style="text-align: left; color: var(--text-secondary); border-bottom: 2px solid var(--card-border);">
+                                <th style="padding: 1rem;">Ngày gửi</th>
+                                <th style="padding: 1rem;">Tiêu đề</th>
+                                <th style="padding: 1rem;">Loại</th>
+                                <th style="padding: 1rem;">Trạng Thái</th>
+                                <th style="padding: 1rem;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-maintenance-list">
+                            <!-- Maintenance requests will be here -->
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding: 2rem;">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Detail Modal -->
+    <div id="invoice-detail-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 600px; width: 95%;">
+            <span class="close-modal" id="close-invoice-detail">&times;</span>
+            <div class="form-scroll-area" style="max-height: 80vh; margin-top: 1rem;">
+                <div id="invoice-receipt-content">
+                    <!-- Receipt detail will be loaded here -->
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <button class="btn-primary" onclick="window.print()" style="padding: 0.6rem 2rem;">
+                    <i class="fa-solid fa-print"></i> In Hóa Đơn
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Request Modal -->
+    <div id="maintenance-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 550px; width: 95%;">
+            <span class="close-modal" id="close-maintenance">&times;</span>
+            <div class="modal-header">
+                <h2 style="color: var(--accent-blue); margin-bottom: 1rem;"><i class="fa-solid fa-paper-plane"></i>
+                    Gửi
+                    Yêu Cầu Mới</h2>
+            </div>
+            <div class="modal-body">
+                <form id="maintenance-form">
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Loại yêu
+                            cầu</label>
+                        <select id="maint-type"
+                            style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1);">
+                            <option value="maintenance">Sửa chữa / Bảo trì</option>
+                            <option value="feedback">Góp ý / Khiếu nại</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Mức độ
+                            ưu
+                            tiên</label>
+                        <select id="maint-priority"
+                            style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1);">
+                            <option value="low">Thấp</option>
+                            <option value="medium" selected>Trung bình</option>
+                            <option value="high">Khẩn cấp (Cần xử lý ngay)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Tiêu
+                            đề</label>
+                        <input type="text" id="maint-title" placeholder="Ví dụ: Hỏng bóng đèn, Rò rỉ nước..." required
+                            style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1);">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Mô tả
+                            chi
+                            tiết</label>
+                        <textarea id="maint-description" rows="4" placeholder="Mô tả cụ thể vấn đề của bạn..." required
+                            style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+                    <div style="margin-top: 2rem;">
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;">
+                            <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div id="logout-confirm-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 400px; text-align: center;">
+            <div class="logout-confirm-icon">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <h2 style="margin-bottom: 1rem;">Đăng Xuất</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Bạn có chắc chắn muốn đăng xuất?</p>
+            <div class="delete-confirm-buttons">
+                <button class="btn-cancel" id="btn-cancel-logout">Huỷ bỏ</button>
+                <button class="btn-confirm-delete" id="btn-confirm-logout" style="background: var(--accent-blue);">Đăng
+                    Xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Shared Auth Logic ---
+        const API_URL = 'https://apartment-api-3jnu.onrender.com/api';
+
+        // Check Auth
+        (function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('currentUser');
+
+            if (!token || !user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Check Role - Protect User Route (Optional: Redirect admin to dashboard?)
+            // For now, allow admin to see this view if they want via direct link, 
+            // but normally logic directs them to index.html
+
+            const userData = JSON.parse(user);
+            document.getElementById('user-name').textContent = userData.name || 'Cư dân';
+        })();
+
+        // Handle Logout
+        function handleLogout() {
+            document.getElementById('logout-confirm-modal').classList.remove('hidden');
+        }
+
+        // Setup Logout Modal
+        const logoutModal = document.getElementById('logout-confirm-modal');
+        document.getElementById('btn-cancel-logout').onclick = () => {
+            logoutModal.classList.add('hidden');
+        };
+        document.getElementById('btn-confirm-logout').onclick = () => {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        };
+
+        // --- Data Loading Logic ---
+        async function loadDirectory() {
+            const token = localStorage.getItem('authToken');
+            const userStr = localStorage.getItem('currentUser');
+
+            if (!token || !userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const currentUser = JSON.parse(userStr);
+            const container = document.getElementById('directory-grid');
+
+            if (!currentUser.phone) {
+                container.innerHTML = '<div class="empty-state"><p>Không tìm thấy SĐT người dùng. Vui lòng đăng nhập lại.</p></div>';
+                return;
+            }
+
+            const userPhone = currentUser.phone.trim();
+
+            try {
+                console.log("Fetching directory from:", `${API_URL}/apartments`);
+                const response = await fetch(`${API_URL}/apartments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+
+                if (!result.success) throw new Error(result.message);
+
+                const buildingState = result.data || [];
+                console.log("Loaded building data:", buildingState.length, "items");
+
+                const myRoom = buildingState.find(item =>
+                    item.residents && Array.isArray(item.residents) &&
+                    item.residents.some(r => r.phoneLogin && r.phoneLogin.trim() === userPhone)
+                );
+
+                if (!myRoom) {
+                    console.warn("No room found for phone:", userPhone);
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-house-user fa-3x" style="margin-bottom: 1rem; color: var(--text-secondary)"></i>
+                            <h3 style="margin-bottom: 0.5rem; color: #fff;">Chưa được gán phòng!</h3>
+                            <p>Số điện thoại <b>${userPhone}</b> chưa được gán vào căn hộ nào trong hệ thống.</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-secondary)">
+                                Vui lòng liên hệ Admin tòa nhà để cập nhật thông tin thành viên.
+                            </p>
+                        </div>
+                        `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                document.querySelector('.section-title').textContent = 'Thông Tin Phòng Của Bạn';
+
+                // Generate Residents List HTML
+                const residentsHtml = myRoom.residents.map(resident => `
+                        <li class="member-item">
+                            <div class="member-avatar">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div class="member-info">
+                                <span class="member-name">
+                                    ${resident.name}
+                                    ${(resident.phoneLogin && resident.phoneLogin.trim() === userPhone) ? '<span style="color:var(--accent-green); font-size:0.8em; margin-left:5px">(Bạn)</span>' : ''}
+                                </span>
+                                <span class="member-role">
+                                    ${resident.gender} · ${resident.dob ? new Date(resident.dob).getFullYear() : 'N/A'}
+                                    ${resident.plate ? `<br><small><i class="fa-solid fa-motorcycle"></i> ${resident.plate}</small>` : ''}
+                                </span>
+                            </div>
+                        </li>
+                        `).join('');
+
+                const card = document.createElement('div');
+                card.className = 'room-entry';
+                card.innerHTML = `
+                        <div class="room-header">
+                            <span class="room-name"><i class="fa-solid fa-door-open"></i> Phòng ${myRoom.id}</span>
+                            <span class="member-count">${myRoom.residents.length} thành viên</span>
+                        </div>
+                        <ul class="member-list">
+                            ${residentsHtml}
+                        </ul>
+                        `;
+
+                container.appendChild(card);
+
+            } catch (error) {
+                console.error("Error loading directory:", error);
+                container.innerHTML = '<div class="empty-state"><p>Lỗi khi tải dữ liệu từ server. Vui lòng thử lại sau.</p></div>';
+            }
+        }
+
+        async function loadInvoices() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const res = await fetch(`${API_URL}/invoices`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+
+                const list = document.getElementById('user-invoice-list');
+                list.innerHTML = '';
+
+                if (result.success && result.data.length > 0) {
+                    result.data.forEach(inv => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>Tháng ${inv.month}/${inv.year}</td>
+                            <td><strong>${inv.totalAmount.toLocaleString()} đ</strong></td>
+                            <td>
+                                <span class="status-badge ${inv.status}">${inv.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</span>
+                                ${inv.status === 'pending' && inv.paymentRequest ? '<br><small style="color: #fbbf24; font-size: 0.75rem;"><i class="fa-solid fa-clock"></i> Đang chờ xác nhận</small>' : ''}
+                            </td>
+                            <td>
+                                <button class="btn-check" onclick="viewInvoiceDetail('${inv._id}')">
+                                    <i class="fa-solid fa-eye"></i> Xem & Thanh toán
+                                </button>
+                            </td>
+                        `;
+                        list.appendChild(tr);
+                    });
+                } else {
+                    list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem;">Bạn chưa có hóa đơn nào.</td></tr>';
+                }
+            } catch (err) {
+                console.error("Lỗi hđ:", err);
+                const list = document.getElementById('user-invoice-list');
+                list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem;">Lỗi khi tải hóa đơn. Vui lòng thử lại.</td></tr>';
+            }
+        }
+
+        let currentInvoices = []; // To store loaded data for detail view
+
+        window.viewInvoiceDetail = async (id) => {
+            const token = localStorage.getItem('authToken');
+            const res = await fetch(`${API_URL}/invoices`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            const inv = data.data.find(i => i._id === id);
+            if (!inv) return;
+
+            const content = document.getElementById('invoice-receipt-content');
+
+            // VietQR logic (example: MB Bank)
+            const BANK_ID = "MB";
+            const ACCOUNT_NO = "0969696969"; // Tài khoản nhận tiền (SĐT Admin/Chủ nhà)
+            const ACCOUNT_NAME = "NGUYEN VAN ADMIN";
+            const AMOUNT = inv.totalAmount;
+            const DESCRIPTION = `P.${inv.roomName} thanh toan thang ${inv.month}`;
+            const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${AMOUNT}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
+
+            content.innerHTML = `
+                        <div class="receipt">
+                            <div class="receipt-header">
+                                <h3 style="color: var(--accent-blue); margin-bottom: 0.5rem;">PHIẾU THU TIỀN PHÒNG</h3>
+                                <p style="font-weight: bold; font-size: 1.1rem;">Phòng ${inv.roomName} - Tháng ${inv.month}/${inv.year}</p>
+                            </div>
+                            <div class="receipt-body">
+                                <div class="receipt-row" style="border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                                    <span>Người đại diện:</span> <span>${inv.representativeName || '-'}</span>
+                                </div>
+                                <div class="receipt-row">
+                                    <span>Số người ở:</span> <span>${inv.residentCount || 0} người</span>
+                                </div>
+                                <div class="receipt-row">
+                                    <span>Giá thuê phòng:</span> <span>${(inv.roomPrice || 0).toLocaleString()} đ</span>
+                                </div>
+                                <div class="receipt-row">
+                                    <span>Tiền Internet (100k/ng):</span> <span>${(inv.internetFee || 0).toLocaleString()} đ</span>
+                                </div>
+                                <div class="receipt-row">
+                                    <span>Tiền Nước (100k/ng):</span> <span>${(inv.waterFee || 0).toLocaleString()} đ</span>
+                                </div>
+                                <div class="receipt-row">
+                                    <span>Dịch vụ chung (200k/ng):</span> <span>${(inv.serviceFee || 0).toLocaleString()} đ</span>
+                                </div>
+
+                                <div style="margin: 1rem 0; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 0.5rem;">
+                                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Chi tiết tiền điện:</div>
+                                    <div class="receipt-row">
+                                        <span>Chỉ số: ${inv.electricity.oldValue} ➞ ${inv.electricity.newValue}</span>
+                                        <span>${(inv.electricity.newValue - inv.electricity.oldValue)} kWh</span>
+                                    </div>
+                                    <div class="receipt-row" style="font-weight: bold; margin-top: 0.2rem;">
+                                        <span>Tiền điện (x 2.500đ):</span>
+                                        <span>${((inv.electricity.newValue - inv.electricity.oldValue) * inv.electricity.price).toLocaleString()} đ</span>
+                                    </div>
+                                </div>
+
+                                <div class="receipt-total" style="margin-top: 1.5rem; border-top: 2px solid var(--accent-blue); padding-top: 1rem;">
+                                    <span>TỔNG CỘNG</span>
+                                    <span style="color: #fbbf24; font-size: 1.4rem;">${inv.totalAmount.toLocaleString()} đ</span>
+                                </div>
+                            </div>
+                            ${inv.status === 'pending' ? `
+                        <div class="payment-qr" style="margin-top: 2rem; padding: 1rem; background: white; border-radius: 1rem; color: #333;">
+                            <p style="font-weight: bold; margin-bottom: 0.5rem;">Quét mã QR thanh toán:</p>
+                            <img src="${qrUrl}" alt="QR Thanh toán" style="width: 100%; max-width: 250px; margin: 0 auto; display: block;">
+                            <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #666;">Chuyển khoản đến MB Bank: ${ACCOUNT_NO}</p>
+                            <small style="color: #888;">Nội dung: ${DESCRIPTION}</small>
+                            ${inv.paymentRequest ? `
+                                <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border-radius: 0.5rem; color: #10b981; font-weight: 500;">
+                                    <i class="fa-solid fa-check-circle"></i> Đã gửi báo cáo thanh toán cho Admin
+                                </div>
+                            ` : `
+                                <button class="btn-primary" id="btn-request-pay-${inv._id}" onclick="requestPaymentConfirm('${inv._id}')" 
+                                        style="width: 100%; margin-top: 1rem; background: #10b981; border: none;">
+                                    <i class="fa-solid fa-paper-plane"></i> Tôi đã chuyển khoản
+                                </button>
+                            `}
+                        </div>
+                    ` : '<div class="paid-stamp" style="border: 4px double #10b981; color: #10b981; padding: 0.5rem 1.5rem; transform: rotate(-15deg); font-weight: 900; font-size: 1.5rem; width: fit-content; margin: 2rem auto;">ĐÃ THANH TOÁN</div>'}
+                        </div>
+                        `;
+
+            document.getElementById('invoice-detail-modal').classList.remove('hidden');
+        };
+
+        window.requestPaymentConfirm = async (id) => {
+            try {
+                const token = localStorage.getItem('authToken');
+                const res = await fetch(`${API_URL}/invoices/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ paymentRequest: true })
+                });
+
+                if (res.ok) {
+                    alert("📩 Đã gửi thông báo cho Admin. Vui lòng chờ Admin kiểm tra và xác nhận hóa đơn của bạn.");
+                    document.getElementById('invoice-detail-modal').classList.add('hidden');
+                    loadInvoices(); // Reload list to reflect status if needed
+                } else {
+                    alert("Lỗi khi gửi thông báo.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Lỗi kết nối.");
+            }
+        };
+
+        // Close modal handlers
+        document.getElementById('close-invoice-detail').onclick = () => {
+            document.getElementById('invoice-detail-modal').classList.add('hidden');
+        };
+
+        window.onclick = (e) => {
+            const modal = document.getElementById('invoice-detail-modal');
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        };
+
+        // --- Maintenance Logic ---
+        async function loadMaintenance() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const res = await fetch(`${API_URL}/maintenance`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                const list = document.getElementById('user-maintenance-list');
+                list.innerHTML = '';
+
+                if (result.success && result.data.length > 0) {
+                    result.data.forEach(req => {
+                        const date = new Date(req.createdAt).toLocaleDateString('vi-VN');
+                        const typeLabel = req.type === 'maintenance' ? 'Bảo trì' : 'Góp ý';
+                        let statusText = '';
+                        switch (req.status) {
+                            case 'pending': statusText = 'Chờ xử lý'; break;
+                            case 'in-progress': statusText = 'Đang xử lý'; break;
+                            case 'completed': statusText = 'Hoàn thành'; break;
+                            case 'cancelled': statusText = 'Đã hủy'; break;
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="padding: 1rem;">${date}</td>
+                            <td style="padding: 1rem;"><strong>${req.title}</strong></td>
+                            <td style="padding: 1rem;">${typeLabel}</td>
+                            <td style="padding: 1rem;"><span class="status-badge ${req.status}">${statusText}</span></td>
+                            <td style="padding: 1rem;">
+                                ${req.status === 'pending' ? `<button class="btn-check" style="border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1);" onclick="cancelMaintenance('${req._id}')">Hủy</button>` : '-'}
+                            </td>
+                        `;
+                        list.appendChild(tr);
+                    });
+                } else {
+                    list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem;">Bạn chưa gửi yêu cầu nào.</td></tr>';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadUserAnnouncements() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const res = await fetch(`${API_URL}/announcements`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+
+                const section = document.getElementById('user-announcement-section');
+                const list = document.getElementById('user-announcement-list');
+
+                if (result.success && result.data.length > 0) {
+                    section.style.display = 'block';
+                    list.innerHTML = '';
+
+                    result.data.forEach(ann => {
+                        const date = new Date(ann.createdAt).toLocaleDateString('vi-VN');
+                        let icon = 'fa-bullhorn';
+                        let colorStyle = '#3b82f6';
+                        if (ann.type === 'urgent') { icon = 'fa-triangle-exclamation'; colorStyle = '#ef4444'; }
+                        if (ann.type === 'event') { icon = 'fa-calendar-check'; colorStyle = '#10b981'; }
+
+                        // Media Logic
+                        let mediaHtml = '';
+                        if (ann.mediaType === 'image' && ann.mediaUrl) {
+                            mediaHtml = `<img src="${ann.mediaUrl}" style="max-width: 100%; max-height: 250px; border-radius: 0.5rem; margin-top: 1rem; display: block;" alt="Attachment">`;
+                        } else if (ann.mediaType === 'video' && ann.mediaUrl) {
+                            mediaHtml = `<video src="${ann.mediaUrl}" controls style="max-width: 100%; max-height: 250px; border-radius: 0.5rem; margin-top: 1rem; display: block;"></video>`;
+                        }
+
+                        const card = document.createElement('div');
+                        card.className = 'glass-panel';
+                        card.style.marginBottom = '1rem';
+                        card.style.padding = '1rem';
+                        card.style.borderLeft = `4px solid ${colorStyle}`;
+
+                        card.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <i class="fa-solid ${icon}" style="color: ${colorStyle}; font-size: 1.2rem;"></i>
+                            <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">${ann.title}</h3>
+                            <div style="flex:1"></div>
+                            <span style="font-size: 0.8rem; color: #aaa;">${date}</span>
+                        </div>
+                        <div style="color: #ddd; white-space: pre-wrap; margin-left: 2rem;">${ann.content}</div>
+                        <div style="margin-left: 2rem;">${mediaHtml}</div>
+                        `;
+                        list.appendChild(card);
+                    });
+                }
+            } catch (err) {
+                console.error("Lỗi tải thông báo", err);
+            }
+        }
+
+        window.openMaintenanceModal = () => {
+            document.getElementById('maintenance-modal').classList.remove('hidden');
+        };
+
+        document.getElementById('close-maintenance').onclick = () => {
+            document.getElementById('maintenance-modal').classList.add('hidden');
+        };
+
+        document.getElementById('maintenance-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('authToken');
+
+            // Get resident's room info first to fill the request
+            const apartmentsRes = await fetch(`${API_URL}/apartments`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const apartmentsData = await apartmentsRes.json();
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const myRoom = apartmentsData.data.find(room =>
+                room.residents && room.residents.some(r => r.phoneLogin === currentUser.phone)
+            );
+
+            if (!myRoom) return alert("Không tìm thấy thông tin phòng của bạn!");
+
+            const body = {
+                roomId: myRoom.id,
+                roomName: `Phòng ${myRoom.id}`,
+                senderName: currentUser.name,
+                type: document.getElementById('maint-type').value,
+                priority: document.getElementById('maint-priority').value,
+                title: document.getElementById('maint-title').value.trim(),
+                description: document.getElementById('maint-description').value.trim()
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/maintenance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert("✅ Yêu cầu của bạn đã được gửi!");
+                    document.getElementById('maintenance-modal').classList.add('hidden');
+                    document.getElementById('maintenance-form').reset();
+                    loadMaintenance();
+                }
+            } catch (err) {
+                alert("Lỗi gửi yêu cầu");
+            }
+        };
+
+        window.cancelMaintenance = async (id) => {
+            if (!confirm("Bạn có chắc muốn hủy yêu cầu này?")) return;
+            try {
+                const token = localStorage.getItem('authToken');
+                await fetch(`${API_URL}/maintenance/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'cancelled' })
+                });
+                loadMaintenance();
+            } catch (err) {
+                alert("Lỗi hủy yêu cầu");
+            }
+        };
+
+        // ==================== MARKETPLACE LOGIC ====================
+        let currentMarketMedia = '';
+
+        async function loadMarketItems() {
+            const list = document.getElementById('user-market-list');
+            if (!list) return;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const res = await fetch(`${API_URL}/market`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    const items = result.data;
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    const currentUserId = currentUser.id; // Assuming ID is saved, else rely on phone? 
+                    // Actually currentUser usually has minimal info. 
+                    // Let's decode token for reliable ID if needed, or use saved ID.
+                    // Ideally we parse JWT here too.
+
+                    const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+                    const myId = tokenPayload.id;
+
+                    if (items.length === 0) {
+                        list.innerHTML = '<div style="text-align: center; color: #aaa; width: 100%; padding: 2rem;">Chưa có tin rao vặt nào.</div>';
+                        return;
+                    }
+
+                    list.innerHTML = items.map(item => {
+                        const isOwner = item.createdBy === myId;
+                        const deleteBtn = isOwner ? `
+                            <button onclick="deleteMarketItem('${item._id}')" style="position: absolute; top: 10px; right: 10px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10;">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        ` : '';
+
+                        return `
+                            <div class="glass-panel market-card" style="min-width: 300px; max-width: 300px; padding: 0.8rem; flex-shrink: 0; position: relative;">
+                                ${deleteBtn}
+                                <img src="${item.image}" alt="Item" style="width: 100%; height: 160px; object-fit: cover; border-radius: 6px; margin-bottom: 0.5rem; background: #333;">
+                                <h4 style="margin: 0.5rem 0 0.2rem 0; color: white; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</h4>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">${item.price.toLocaleString()} đ</span>
+                                    <span style="font-size: 0.8rem; color: #aaa;">${new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                                <div style="font-size: 0.9rem; color: #ddd; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fa-solid fa-phone" style="font-size: 0.8rem;"></i> ${item.contactPhone}
+                                </div>
+                                <p style="font-size: 0.85rem; color: #bbb; margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                    ${item.description || 'Không có mô tả'}
+                                </p>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Lỗi tải chợ:", err);
+            }
+        }
+
+        window.openMarketModal = () => {
+            document.getElementById('market-modal').classList.remove('hidden');
+        };
+
+        const closeMarketModalBtn = document.getElementById('close-market-modal');
+        if (closeMarketModalBtn) {
+            closeMarketModalBtn.onclick = () => {
+                document.getElementById('market-modal').classList.add('hidden');
+                document.getElementById('market-form').reset();
+                document.getElementById('mkt-preview').style.display = 'none';
+                currentMarketMedia = '';
+            };
+        }
+
+        const mktFileInput = document.getElementById('mkt-file');
+        if (mktFileInput) {
+            mktFileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("Ảnh quá lớn (Max 5MB)");
+                    e.target.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    currentMarketMedia = ev.target.result;
+                    const preview = document.getElementById('mkt-preview');
+                    preview.style.display = 'block';
+                    preview.innerHTML = `<img src="${currentMarketMedia}" style="max-height: 150px; border-radius: 4px;">`;
+                };
+                reader.readAsDataURL(file);
+            };
+        }
+
+        const marketForm = document.getElementById('market-form');
+        if (marketForm) {
+            marketForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng...';
+                btn.disabled = true;
+
+                if (!currentMarketMedia) {
+                    alert("Vui lòng chọn ảnh món đồ");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                const data = {
+                    title: document.getElementById('mkt-title').value,
+                    price: parseFloat(document.getElementById('mkt-price').value),
+                    contactPhone: document.getElementById('mkt-phone').value,
+                    description: document.getElementById('mkt-desc').value,
+                    image: currentMarketMedia
+                };
+
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const res = await fetch(`${API_URL}/market`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert("✅ Đã đăng tin thành công!");
+                        document.getElementById('market-modal').classList.add('hidden');
+                        marketForm.reset();
+                        document.getElementById('mkt-preview').style.display = 'none';
+                        currentMarketMedia = '';
+                        loadMarketItems();
+                    } else {
+                        alert("Lỗi: " + result.message);
+                    }
+                } catch (err) {
+                    alert("Lỗi kết nối");
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            };
+        }
+
+        window.deleteMarketItem = async (id) => {
+            if (!confirm("Bạn có chắc muốn xóa tin này?")) return;
+            try {
+                const token = localStorage.getItem('authToken');
+                const res = await fetch(`${API_URL}/market/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                if (result.success) {
+                    loadMarketItems();
+                } else {
+                    alert(result.message || "Không thể xóa");
+                }
+            } catch (err) {
+                alert("Lỗi kết nối");
+            }
+        };
+
+        // Close modal on outside click
+        window.addEventListener('click', (e) => {
+            const mktModal = document.getElementById('market-modal');
+            if (mktModal && e.target === mktModal) {
+                mktModal.classList.add('hidden');
+            }
+        });
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDirectory();
+            loadInvoices();
+            loadMaintenance();
+            loadUserAnnouncements();
+            loadMarketItems();
+        });
+
+    </script>
+</body>
+
+</html>

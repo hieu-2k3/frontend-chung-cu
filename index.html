@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Cư Dân Chung Cư</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Using FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-left">
+                <h1><i class="fa-solid fa-building-user"></i> Quản Lý Chung Cư</h1>
+                <p class="subtitle">Hệ thống theo dõi cư dân & sơ đồ tòa nhà</p>
+            </div>
+            <div class="header-right">
+                <button id="btn-reset-system" class="btn-reset">
+                    <i class="fa-solid fa-trash-can"></i> Reset Hệ Thống
+                </button>
+                <div class="user-info">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <span id="user-name">Người dùng</span>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                </button>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <!-- Top Section: Stats Panel -->
+            <div class="stats-panel">
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel stat-blue clickable" id="stat-total-residents"
+                        onclick="window.openAllResidentsModal()">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Tổng cư dân</span>
+                            <h3 id="total-residents">0</h3>
+                        </div>
+                        <div class="stat-decoration"></div>
+                    </div>
+                    <div class="stat-card glass-panel stat-green">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-door-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Phòng trống</span>
+                            <h3 id="vacant-rooms">0</h3>
+                        </div>
+                        <div class="stat-decoration"></div>
+                    </div>
+                    <div class="stat-card glass-panel stat-red">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-house-user"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Đã cho thuê</span>
+                            <h3 id="occupied-rooms">0</h3>
+                        </div>
+                        <div class="stat-decoration"></div>
+                    </div>
+                    <div class="stat-card glass-panel stat-amber clickable" id="stat-total-bikes"
+                        onclick="window.openParkingModal()">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Tổng số xe</span>
+                            <h3 id="total-bikes">0</h3>
+                        </div>
+                        <div class="stat-decoration"></div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <!-- Announcement Section (Admin View) -->
+    <div class="glass-panel" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">
+        <div class="section-header" style="margin-bottom: 1rem;">
+            <h2><i class="fa-solid fa-bullhorn"></i> Bảng Tin Thông Báo</h2>
+            <button class="btn-primary" onclick="openAnnouncementModal()" style="width: auto;">
+                <i class="fa-solid fa-plus"></i> Đăng Thông Báo
+            </button>
+        </div>
+        <div class="announcement-grid" id="admin-announcement-list">
+            <!-- Announcements will go here -->
+        </div>
+    </div>
+
+    <!-- Market Management Section -->
+    <div class="glass-panel" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">
+        <div class="section-header" style="margin-bottom: 1rem;">
+            <h2><i class="fa-solid fa-store"></i> Quản Lý Chợ Cư Dân</h2>
+            <span style="font-size: 0.9rem; color: #ccc;">(Admin kiểm duyệt và xóa tin vi phạm)</span>
+        </div>
+        <div class="announcement-grid" id="admin-market-list">
+            <!-- Market items will be loaded here using the same grid style -->
+            <div style="text-align: center; color: #aaa; padding: 2rem;">Đang tải tin...</div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- Center Section: Building Diagram (Full Width) -->
+        <div class="building-section glass-panel">
+            <div class="building-header">
+                <h2><i class="fa-solid fa-building"></i> Sơ đồ tòa nhà</h2>
+                <div class="floor-legend">
+                    <span class="legend-item"><span class="dot vacant"></span> Còn trống</span>
+                    <span class="legend-item"><span class="dot occupied"></span> Đã ở</span>
+                </div>
+            </div>
+            <div class="building-container" id="building-diagram">
+                <!-- Floors and rooms will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Section: Invoice Management -->
+    <div class="invoice-management-section glass-panel" style="margin-top: 2.5rem;">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-file-invoice-dollar"></i> Danh Sách Hóa Đơn</h2>
+            <button class="btn-primary" id="btn-open-invoice-modal" style="width: auto;">
+                <i class="fa-solid fa-plus"></i> Tạo Hóa Đơn Mới
+            </button>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+            <select id="invoice-filter-month"
+                style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
+                <option value="all">Tất cả tháng</option>
+            </select>
+            <!-- Button Create Invoice removed here as requested -->
+            <button class="btn-primary" onclick="exportRevenueReport()" style="width: auto; background: #10b981;">
+                <i class="fa-solid fa-file-excel"></i> Xuất Báo Cáo
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tháng/Năm</th>
+                        <th>Phòng</th>
+                        <th>Tổng Tiền</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Tạo</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody id="invoice-list-body">
+                    <!-- Invoices will be here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Maintenance & Feedback Section -->
+    <div class="maintenance-section glass-panel" style="margin-top: 2.5rem;">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-wrench"></i> Bảo Trì & Phản Hồi</h2>
+            <div class="section-actions">
+                <button class="btn-primary" id="btn-open-maintenance-modal" style="width: auto;">
+                    <i class="fa-solid fa-plus"></i> Tạo Yêu Cầu Mới
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ngày gửi</th>
+                        <th>Phòng</th>
+                        <th>Tiêu đề</th>
+                        <th>Loại</th>
+                        <th>Độ ưu tiên</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="maintenance-list-body">
+                    <!-- Maintenance requests will be here -->
+                    <tr>
+                        <td colspan="7" class="empty-message">Đang tải dữ liệu...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div id="room-modal" class="modal hidden">
+        <div class="modal-content glass-panel modal-lg">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h2 id="modal-room-title">Phòng 101</h2>
+                <span id="modal-status" class="status-badge">Trống</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-grid">
+                    <!-- Left Column: Resident List -->
+                    <div class="resident-list-section">
+                        <h3><i class="fa-solid fa-users-line"></i> Danh Sách Cư Dân (<span
+                                id="resident-count-display">0</span>)</h3>
+                        <div class="resident-scroll-area">
+                            <ul id="modal-resident-list" class="resident-list">
+                                <!-- List items will be rendered here -->
+                                <li class="empty-message">Chưa có cư dân nào</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Add Form -->
+                    <div class="add-resident-section">
+                        <h3><i class="fa-solid fa-user-plus"></i> Thêm Cư Dân Mới</h3>
+                        <div class="form-scroll-area">
+                            <form id="add-resident-form" class="premium-form">
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-signature"></i> Họ và Tên</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fa-solid fa-user-tag"></i>
+                                        <input type="text" id="inp-name" required placeholder="Nguyễn Văn A">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label><i class="fa-solid fa-calendar-days"></i> Ngày Sinh</label>
+                                        <div class="input-icon-wrapper">
+                                            <i class="fa-solid fa-cake-candles"></i>
+                                            <input type="date" id="inp-dob" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fa-solid fa-venus-mars"></i> Giới Tính</label>
+                                        <div class="input-icon-wrapper">
+                                            <i class="fa-solid fa-venus-mars"></i>
+                                            <select id="inp-gender">
+                                                <option value="Nam">Nam</option>
+                                                <option value="Nữ">Nữ</option>
+                                                <option value="Khác">Khác</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-phone"></i> Số Điện Thoại (Dùng để đăng
+                                        nhập)</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fa-solid fa-phone-flip"></i>
+                                        <input type="text" id="inp-phone-login" required placeholder="09xxxxxxxx">
+                                    </div>
+                                    <span class="input-hint">* Cư dân sẽ dùng SĐT này để đăng ký và đăng nhập tài
+                                        khoản</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-envelope"></i> Email (Tùy chọn)</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fa-solid fa-at"></i>
+                                        <input type="email" id="inp-email" placeholder="email@example.com">
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-3">
+                                    <div class="form-group">
+                                        <label><i class="fa-solid fa-map-location-dot"></i> Quê Quán</label>
+                                        <input type="text" id="inp-hometown" placeholder="Hà Nội">
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fa-solid fa-briefcase"></i> Nghề Nghiệp</label>
+                                        <input type="text" id="inp-job" placeholder="Nhân viên">
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i class="fa-solid fa-id-card"></i> CCCD</label>
+                                        <input type="text" id="inp-cccd" placeholder="0010xx">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fa-solid fa-motorcycle"></i> Biển Số Xe Máy (Nếu có)</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fa-solid fa-hashtag"></i>
+                                        <input type="text" id="inp-plate" placeholder="29A1-123.45">
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="btn-trigger-add" class="btn-primary btn-premium-add">
+                                    <i class="fa-solid fa-plus-circle"></i> Xác Nhận Thêm Vào Phòng
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Resident Modal -->
+    <div id="edit-resident-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <span class="close-modal" id="close-edit-modal">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-user-pen"></i> Sửa Thông Tin Cư Dân</h2>
+            </div>
+            <div class="modal-body">
+                <form id="edit-resident-form">
+                    <div class="form-scroll-area">
+                        <div class="form-group">
+                            <label>Họ và Tên</label>
+                            <input type="text" id="edit-name" required placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ngày Sinh</label>
+                                <input type="date" id="edit-dob" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Giới Tính</label>
+                                <select id="edit-gender">
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-phone"></i> Số Điện Thoại (Đăng nhập)</label>
+                            <input type="text" id="edit-phone-login" required placeholder="09xxxxxxxx">
+                            <small style="color: var(--text-secondary); font-size: 0.8rem; font-style: italic;">*
+                                SĐT
+                                này dùng để cư dân đăng nhập. Thay đổi sẽ cập nhật tài khoản đăng nhập.</small>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-envelope"></i> Email (Tùy chọn)</label>
+                            <input type="email" id="edit-email" placeholder="email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Quê Quán</label>
+                            <input type="text" id="edit-hometown" placeholder="Hà Nội">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nghề Nghiệp</label>
+                                <input type="text" id="edit-job" placeholder="Nhân viên VP">
+                            </div>
+                            <div class="form-group">
+                                <label>CCCD / CMND</label>
+                                <input type="text" id="edit-cccd" required placeholder="00109xxxxxxx">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-motorcycle"></i> Biển Số Xe Máy</label>
+                            <input type="text" id="edit-plate" placeholder="29-A1 12345">
+                        </div>
+                    </div>
+                    <div class="edit-form-buttons">
+                        <button type="button" class="btn-cancel" id="btn-cancel-edit">Huỷ bỏ</button>
+                        <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Lưu Thay
+                            Đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Residents Modal -->
+    <div id="all-residents-modal" class="modal hidden">
+        <div class="modal-content glass-panel modal-lg">
+            <span class="close-modal" id="close-all-residents-modal">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-users"></i> Danh Sách Tất Cả Cư Dân</h2>
+                <span class="status-badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
+                    <span id="all-residents-count">0</span> người
+                </span>
+            </div>
+            <div class="modal-body">
+                <div class="all-residents-scroll-area">
+                    <table class="residents-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Họ và Tên</th>
+                                <th>Phòng</th>
+                                <th>Giới tính</th>
+                                <th>Nghề nghiệp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-residents-list">
+                            <!-- List items will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div id="invoice-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 800px;">
+            <span class="close-modal" id="close-invoice-modal">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-circle-plus"></i> Tạo Hóa Đơn Phòng</h2>
+            </div>
+            <div class="modal-body">
+                <form id="invoice-form" class="premium-form">
+                    <div class="form-scroll-area">
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-door-open"></i> Chọn Phòng</label>
+                                <select id="inv-room-id" required></select>
+                            </div>
+                            <div class="form-row" style="display: flex; gap: 0.5rem;">
+                                <div class="form-group">
+                                    <label>Tháng</label>
+                                    <input type="number" id="inv-month" min="1" max="12" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Năm</label>
+                                    <input type="number" id="inv-year" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="invoice-section-title">
+                            <i class="fa-solid fa-user-tie"></i> Thông tin cơ bản
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label>Người đại diện</label>
+                                <input type="text" id="inv-representative" placeholder="Tên chủ hộ">
+                            </div>
+                            <div class="form-group">
+                                <label>Số người ở</label>
+                                <input type="number" id="inv-resident-count" value="1">
+                            </div>
+                        </div>
+
+                        <div class="invoice-section-title">
+                            <i class="fa-solid fa-money-bill-wave"></i> Giá Phòng & Dịch Vụ
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label>Giá thuê phòng</label>
+                                <input type="number" id="inv-room-price" value="0" placeholder="đ/tháng">
+                            </div>
+                            <div class="form-group" style="opacity: 0.8; pointer-events: none;">
+                                <label>Internet (100k/người)</label>
+                                <input type="text" id="inv-internet-display" readonly value="100.000 đ">
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group" style="opacity: 0.8; pointer-events: none;">
+                                <label>Tiền nước (100k/người)</label>
+                                <input type="text" id="inv-water-display" readonly value="100.000 đ">
+                            </div>
+                            <div class="form-group" style="opacity: 0.8; pointer-events: none;">
+                                <label>Dịch vụ (200k/người)</label>
+                                <input type="text" id="inv-service-display" readonly value="200.000 đ">
+                            </div>
+                        </div>
+
+                        <div class="invoice-section-title">
+                            <i class="fa-solid fa-bolt"></i> Chỉ số Điện (2.500đ/kWh)
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label>Số điện đầu tháng</label>
+                                <input type="number" id="inv-elec-old" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Số điện cuối tháng</label>
+                                <input type="number" id="inv-elec-new" value="0">
+                            </div>
+                        </div>
+                        <div class="form-group" style="opacity: 0.9; pointer-events: none; margin-top: -0.5rem;">
+                            <label>Số điện đã dùng (kWh)</label>
+                            <input type="text" id="inv-elec-used" readonly value="0"
+                                style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-weight: bold; text-align: center;">
+                        </div>
+
+                        <div class="total-display glass-panel">
+                            <span>TỔNG CỘNG:</span>
+                            <span id="inv-total-display">0 đ</span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn-primary w-100">
+                            <i class="fa-solid fa-check-double"></i> Xác Nhận & Lưu Hóa Đơn
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirm-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 400px; text-align: center;">
+            <div class="delete-confirm-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2 style="margin-bottom: 1rem;">Xác Nhận Xoá</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Bạn có chắc chắn muốn xoá cư dân này
+                không?</p>
+            <div class="delete-confirm-buttons">
+                <button class="btn-cancel" id="btn-cancel-delete">Huỷ bỏ</button>
+                <button class="btn-confirm-delete" id="btn-confirm-delete">Xoá</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parking Modal - Motorcycle List -->
+    <div id="parking-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <span class="close-modal" id="close-parking-modal">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-motorcycle"></i> Danh Sách Xe Máy</h2>
+                <span class="status-badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">
+                    <span id="parking-bike-count">0</span> xe
+                </span>
+            </div>
+            <div class="modal-body">
+                <div class="all-residents-scroll-area">
+                    <table class="residents-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Biển Số Xe</th>
+                                <th>Phòng</th>
+                                <th>Chủ Xe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="parking-list">
+                            <!-- List items will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logout-confirm-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 400px; text-align: center;">
+            <div class="logout-confirm-icon">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <h2 style="margin-bottom: 1rem;">Đăng Xuất</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Bạn có chắc chắn muốn đăng xuất khỏi
+                hệ
+                thống?</p>
+            <div class="delete-confirm-buttons">
+                <button class="btn-cancel" id="btn-cancel-logout">Huỷ bỏ</button>
+                <button class="btn-confirm-delete" id="btn-confirm-logout" style="background: var(--accent-blue);">Đăng
+                    Xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Success Modal -->
+    <div id="account-success-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 450px; text-align: center;">
+            <div class="success-icon" style="font-size: 3rem; color: var(--accent-green); margin-bottom: 1rem;">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h2 style="margin-bottom: 0.5rem;">Tạo Tài Khoản Thành Công!</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Vui lòng cung cấp thông tin này cho
+                cư
+                dân.</p>
+
+            <div
+                style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 1rem; text-align: left; margin-bottom: 1.5rem;">
+                <div style="margin-bottom: 1rem;">
+                    <span
+                        style="color: var(--text-secondary); font-size: 0.9rem; display: block; margin-bottom: 0.2rem;">Email
+                        đăng nhập:</span>
+                    <div style="font-size: 1.1rem; font-weight: 500; color: white;" id="acc-email-display">
+                        user@example.com</div>
+                </div>
+                <div>
+                    <span
+                        style="color: var(--text-secondary); font-size: 0.9rem; display: block; margin-bottom: 0.2rem;">Mật
+                        khẩu:</span>
+                    <div style="font-size: 1.8rem; font-weight: 700; color: #fbbf24; letter-spacing: 2px;"
+                        id="acc-pass-display">123456</div>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="btn-close-account-modal" style="width: 100%; justify-content: center;">
+                <i class="fa-solid fa-check"></i> Đã Sao Chép & Đóng
+            </button>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 500px; text-align: center;">
+            <div class="delete-confirm-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2 style="color: #ef4444; margin-bottom: 1rem;">Reset Hệ Thống?</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Hành động này sẽ <b>XÓA SẠCH</b> toàn bộ cư dân và tài khoản (ngoại trừ bạn).
+                Dữ liệu đã xóa sẽ không thể khôi phục.
+            </p>
+
+            <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
+                <p style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Nhập chữ
+                    <b>RESET</b> để xác nhận:
+                </p>
+                <input type="text" id="reset-confirm-input" placeholder="Nhập RESET..."
+                    style="text-align: center; font-weight: bold; letter-spacing: 2px; border-color: rgba(239, 68, 68, 0.3);">
+            </div>
+
+            <div class="delete-confirm-buttons">
+                <button class="btn-cancel" id="btn-close-reset-modal">Huỷ bỏ</button>
+                <button class="btn-confirm-delete" id="btn-execute-reset" style="background: #ef4444; opacity: 0.5;"
+                    disabled>
+                    Xác Nhận Xoá Hết
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Announcement Modal -->
+    <div id="announcement-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <span class="close-modal" id="close-announcement-modal">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-bullhorn"></i> Đăng Thông Báo Mới</h2>
+            </div>
+            <div class="modal-body">
+                <form id="announcement-form" class="premium-form">
+                    <div class="form-scroll-area" style="max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-heading"></i> Tiêu đề thông báo</label>
+                            <input type="text" id="ann-title" placeholder="Ví dụ: Lịch cắt nước ngày mai..." required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-tag"></i> Loại thông báo</label>
+                            <select id="ann-type">
+                                <option value="normal">Thông thường</option>
+                                <option value="urgent">Khẩn cấp / Quan trọng</option>
+                                <option value="event">Sự kiện / Tin vui</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-align-left"></i> Nội dung chi tiết</label>
+                            <textarea id="ann-content" rows="4"
+                                style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"
+                                required placeholder="Nhập nội dung thông báo..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-paperclip"></i> Đính kèm Ảnh / Video (Tùy chọn)</label>
+                            <div
+                                style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 0.5rem; border: 1px dashed rgba(255,255,255,0.2);">
+                                <input type="file" id="ann-file" accept="image/*,video/*"
+                                    style="border: none; padding: 0.5rem;">
+                                <div id="media-preview" style="margin-top: 0.5rem; display: none; text-align: center;">
+                                    <!-- Preview will be shown here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn-primary w-100">
+                            <i class="fa-solid fa-paper-plane"></i> Đăng Thông Báo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Modal -->
+    <div id="maintenance-modal" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <span class="close-modal" id="close-maintenance-modal">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-wrench"></i> Gửi Yêu Cầu / Phản Hồi</h2>
+            </div>
+            <div class="modal-body">
+                <form id="maintenance-form" class="premium-form">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-door-open"></i> Chọn Phòng</label>
+                        <select id="maint-room-id" required></select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-list"></i> Loại yêu cầu</label>
+                            <select id="maint-type">
+                                <option value="maintenance">Sửa chữa / Bảo trì</option>
+                                <option value="feedback">Góp ý / Khiếu nại</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-triangle-exclamation"></i> Ưu tiên</label>
+                            <select id="maint-priority">
+                                <option value="low">Thấp</option>
+                                <option value="medium" selected>Trung bình</option>
+                                <option value="high">Khẩn cấp</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-heading"></i> Tiêu đề</label>
+                        <input type="text" id="maint-title" placeholder="Ví dụ: Hỏng bóng đèn phòng khách" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-comment-dots"></i> Nội dung chi tiết</label>
+                        <textarea id="maint-description" rows="4"
+                            style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); font-family: inherit;"
+                            placeholder="Mô tả chi tiết tình trạng hoặc vấn đề..." required></textarea>
+                    </div>
+                    <div class="form-actions" style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn-primary w-100">
+                            <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div> <!-- end app-container -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
+```
