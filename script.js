@@ -752,6 +752,36 @@ btnConfirmDelete.onclick = async (e) => {
         if (phoneToDelete) {
             try {
                 const token = localStorage.getItem('authToken');
+
+                // --- NEW LOGIC: Xóa tất cả hợp đồng của user này ---
+                console.log(`Searching contracts for tenant phone ${phoneToDelete} to cleanup...`);
+                const allContractsRes = await fetch(`${API_URL}/contracts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const allContractsData = await allContractsRes.json();
+
+                if (allContractsData.success && allContractsData.data) {
+                    // Chuẩn hóa phone để so sánh chính xác
+                    const cleanPhoneToDelete = phoneToDelete.replace(/\D/g, '');
+
+                    const userContracts = allContractsData.data.filter(c => {
+                        const cPhone = (c.tenantPhone || '').replace(/\D/g, '');
+                        return cPhone === cleanPhoneToDelete;
+                    });
+
+                    if (userContracts.length > 0) {
+                        console.log(`Found ${userContracts.length} contracts related to user. Deleting...`);
+                        await Promise.all(userContracts.map(c =>
+                            fetch(`${API_URL}/contracts/${c._id}`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            })
+                        ));
+                        console.log("All related contracts deleted.");
+                    }
+                }
+                // ----------------------------------------------------
+
                 const response = await fetch(`${API_URL}/users/${phoneToDelete}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -759,17 +789,17 @@ btnConfirmDelete.onclick = async (e) => {
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(`✅ Đã xóa cư dân "${residentName}" và tài khoản đăng nhập (${phoneToDelete}) vĩnh viễn.`);
+                    alert(`✅ Đã xóa cư dân "${residentName}", tài khoản đ/nhập và tất cả hợp đồng liên quan.`);
                 } else {
                     console.warn("Lưu ý:", result.message);
-                    alert(`⚠️ Đã xóa cư dân khỏi phòng, nhưng không tìm thấy tài khoản để xóa (SĐT: ${phoneToDelete}).`);
+                    alert(`⚠️ Đã xóa cư dân khỏi phòng, nhưng có lỗi khi xóa tài khoản: ${result.message}`);
                 }
             } catch (err) {
-                console.error("Lỗi xóa tài khoản:", err);
-                alert("❌ Lỗi kết nối khi xóa tài khoản. Vui lòng kiểm tra lại mạng.");
+                console.error("Lỗi xóa tài khoản/hợp đồng:", err);
+                alert("❌ Lỗi kết nối khi xóa dữ liệu.");
             }
         } else {
-            alert(`⚠️ Đã xóa cư dân "${residentName}", nhưng người này chưa có SĐT đăng nhập nên không thể xóa tài khoản.`);
+            alert(`⚠️ Đã xóa cư dân "${residentName}", nhưng người này chưa có SĐT đăng nhập nên không thể xóa tài khoản/hợp đồng.`);
         }
 
         // 3. Refresh UI Local First (Fast Response)
