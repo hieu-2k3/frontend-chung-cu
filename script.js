@@ -940,7 +940,7 @@ window.openAllResidentsModal = () => {
     countEl.textContent = all.length;
 
     if (all.length === 0) {
-        listEl.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem;">Chưa có cư dân nào.</td></tr>';
+        listEl.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">Chưa có cư dân nào.</td></tr>';
     } else {
         all.forEach((res, idx) => {
             const tr = document.createElement('tr');
@@ -948,6 +948,7 @@ window.openAllResidentsModal = () => {
                 <td>${idx + 1}</td>
                 <td><strong>${res.name}</strong></td>
                 <td><span class="room-badge">P.${res.roomName}</span></td>
+                <td>${res.phone || '-'}</td>
                 <td>${res.gender}</td>
                 <td>${res.job || '-'}</td>
             `;
