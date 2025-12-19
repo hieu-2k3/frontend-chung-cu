@@ -304,7 +304,8 @@
                     style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
                     <h2 class="section-title" style="margin-bottom: 0; border: none; padding: 0;"><i
                             class="fa-solid fa-store"></i> Chợ Cư Dân</h2>
-                    <button class="btn-primary" onclick="openMarketModal()" style="width: auto;">
+                    <button id="btn-open-market-modal" class="btn-primary" onclick="openMarketModal()"
+                        style="width: auto;">
                         <i class="fa-solid fa-camera"></i> Đăng tin
                     </button>
                 </div>
@@ -353,7 +354,7 @@
                     <p style="color: var(--text-secondary); font-size: 0.9rem;">Gửi yêu cầu sửa chữa hoặc góp ý cho
                         tòa
                         nhà.</p>
-                    <button class="btn-primary" onclick="openMaintenanceModal()"
+                    <button id="btn-user-open-maintenance" class="btn-primary" onclick="openMaintenanceModal()"
                         style="width: auto; padding: 0.5rem 1.5rem;">
                         <i class="fa-solid fa-plus"></i> Tạo Yêu Cầu
                     </button>
@@ -592,10 +593,18 @@
                     window.userHasRoom = true;
                 }
 
-                // Refresh restricted sections if needed (though they usually load after this)
+                // Refresh restricted sections and control button visibility
+                const marketBtn = document.getElementById('btn-open-market-modal');
+                const maintBtn = document.getElementById('btn-user-open-maintenance');
+
                 if (!window.userHasRoom) {
                     renderRestrictedPlaceholder('user-invoice-list', 'hóa đơn');
                     renderRestrictedPlaceholder('user-maintenance-list', 'yêu cầu');
+                    if (marketBtn) marketBtn.style.display = 'none';
+                    if (maintBtn) maintBtn.style.display = 'none';
+                } else {
+                    if (marketBtn) marketBtn.style.display = 'block';
+                    if (maintBtn) maintBtn.style.display = 'block';
                 }
 
                 if (!myRoom) {
@@ -619,8 +628,8 @@
                             </div>
                             <div class="onboarding-features">
                                 <div class="feature-tag active"><i class="fa-solid fa-bullhorn"></i> Xem tin tức tòa nhà</div>
-                                <div class="feature-tag active"><i class="fa-solid fa-store"></i> Chợ cư dân & Rao vặt</div>
-                                <div class="feature-tag"><i class="fa-solid fa-file-invoice-dollar"></i> Quản lý hóa đơn</div>
+                                <div class="feature-tag active"><i class="fa-solid fa-store"></i> Xem Chợ cư dân</div>
+                                <div class="feature-tag"><i class="fa-solid fa-camera"></i> Đăng tin rao vặt</div>
                                 <div class="feature-tag"><i class="fa-solid fa-wrench"></i> Gửi yêu cầu bảo trì</div>
                             </div>
                             <p style="font-size: 0.85rem; margin-top: 2rem; color: #64748b;">
@@ -1089,6 +1098,10 @@
         });
 
         window.openMaintenanceModal = () => {
+            if (!window.userHasRoom) {
+                alert("Bạn cần được gán vào phòng để thực hiện chức năng này.");
+                return;
+            }
             document.getElementById('maintenance-modal').classList.remove('hidden');
         };
 
@@ -1273,6 +1286,10 @@
 
 
         window.openMarketModal = () => {
+            if (!window.userHasRoom) {
+                alert("Bạn cần được gán vào phòng để thực hiện chức năng này.");
+                return;
+            }
             document.getElementById('market-modal').classList.remove('hidden');
         };
 
