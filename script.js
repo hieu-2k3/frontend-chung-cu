@@ -1681,35 +1681,27 @@ async function loadAnnouncements() {
                 if (ann.type === 'event') { icon = 'fa-calendar-check'; colorStyle = '#10b981'; }
 
                 const card = document.createElement('div');
-                card.className = 'announcement-card';
+                card.className = 'announcement-card announcement-card-clickable';
                 card.style.background = 'rgba(255,255,255,0.05)';
                 card.style.borderRadius = '0.5rem';
                 card.style.padding = '1rem';
-                card.style.marginBottom = '1rem';
+                card.style.marginBottom = '0.75rem';
                 card.style.borderLeft = `4px solid ${colorStyle}`;
                 card.style.position = 'relative';
-
-                // Media Content Handling
-                let mediaHtml = '';
-                if (ann.mediaType === 'image' && ann.mediaUrl) {
-                    mediaHtml = `<img src="${ann.mediaUrl}" style="max-width: 100%; max-height: 200px; border-radius: 0.5rem; margin-top: 0.5rem; display: block;" alt="Attachment">`;
-                } else if (ann.mediaType === 'video' && ann.mediaUrl) {
-                    mediaHtml = `<video src="${ann.mediaUrl}" controls style="max-width: 100%; max-height: 200px; border-radius: 0.5rem; margin-top: 0.5rem; display: block;"></video>`;
-                }
+                card.onclick = () => viewAnnouncementDetail(ann);
 
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="flex: 1;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                <i class="fa-solid ${icon}" style="color: ${colorStyle};"></i>
-                                <h4 style="margin: 0; color: white; font-size: 1.1rem;">${ann.title}</h4>
-                                <span style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 0.1rem 0.5rem; border-radius: 4px; color: #ccc;">${date}</span>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                <i class="fa-solid ${icon}" style="color: ${colorStyle}; font-size: 0.9rem;"></i>
+                                <h4 class="text-truncate" style="margin: 0; color: white; font-size: 1rem; flex: 1;">${ann.title}</h4>
                             </div>
-                            <p style="color: #ccc; font-size: 0.95rem; white-space: pre-wrap;">${ann.content}</p>
-                            ${mediaHtml}
+                            <div class="text-truncate" style="color: #94a3b8; font-size: 0.85rem;">${ann.content}</div>
+                            <span style="font-size: 0.7rem; color: #64748b; margin-top: 0.25rem; display: block;">${date}</span>
                         </div>
-                        <button onclick="deleteAnnouncement('${ann._id}')" class="btn-delete-ann" style="background: none; border: none; color: #ef4444; opacity: 0.7; cursor: pointer; padding: 0.25rem;">
-                            <i class="fa-solid fa-trash"></i>
+                        <button onclick="event.stopPropagation(); deleteAnnouncement('${ann._id}')" class="btn-delete-ann" style="background: none; border: none; color: #ef4444; opacity: 0.6; cursor: pointer; padding: 0.25rem; margin-left: 0.5rem;">
+                            <i class="fa-solid fa-trash" style="font-size: 0.85rem;"></i>
                         </button>
                     </div>
                 `;
@@ -1722,6 +1714,50 @@ async function loadAnnouncements() {
         console.error("Lỗi tải thông báo:", err);
     }
 }
+
+function viewAnnouncementDetail(ann) {
+    const modal = document.getElementById('ann-detail-modal');
+    const body = document.getElementById('ann-detail-body');
+    if (!modal || !body) return;
+
+    const date = new Date(ann.createdAt).toLocaleString('vi-VN');
+    let colorStyle = '#3b82f6';
+    let typeName = 'Thông báo chung';
+    if (ann.type === 'urgent') { colorStyle = '#ef4444'; typeName = 'Khẩn cấp'; }
+    if (ann.type === 'event') { colorStyle = '#10b981'; typeName = 'Sự kiện'; }
+
+    let mediaHtml = '';
+    if (ann.mediaType === 'image' && ann.mediaUrl) {
+        mediaHtml = `<img src="${ann.mediaUrl}" style="max-width: 100%; border-radius: 0.75rem; margin-top: 1.5rem; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="Media">`;
+    } else if (ann.mediaType === 'video' && ann.mediaUrl) {
+        mediaHtml = `<video src="${ann.mediaUrl}" controls style="max-width: 100%; border-radius: 0.75rem; margin-top: 1.5rem; display: block;"></video>`;
+    }
+
+    body.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                <span style="background: ${colorStyle}20; color: ${colorStyle}; padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                    ${typeName}
+                </span>
+                <span style="color: var(--text-secondary); font-size: 0.85rem;">${date}</span>
+            </div>
+            <h3 style="color: white; font-size: 1.4rem; line-height: 1.3; margin-bottom: 1rem;">${ann.title}</h3>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 1.05rem; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: 0.75rem;">${ann.content}</div>
+            ${mediaHtml}
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+}
+
+const closeAnnDetailBtn = document.getElementById('close-ann-detail');
+if (closeAnnDetailBtn) {
+    closeAnnDetailBtn.onclick = () => document.getElementById('ann-detail-modal').classList.add('hidden');
+}
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('ann-detail-modal');
+    if (e.target === modal) modal.classList.add('hidden');
+});
 
 window.openAnnouncementModal = () => {
     document.getElementById('announcement-modal').classList.remove('hidden');
