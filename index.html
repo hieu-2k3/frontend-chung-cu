@@ -134,10 +134,13 @@
                 </div>
 
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
-                    <select id="invoice-filter-month"
-                        style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
-                        <option value="all">Tất cả tháng</option>
-                    </select>
+                    <div class="filter-wrapper">
+                        <i class="fa-solid fa-calendar-days calendar-icon"></i>
+                        <select id="invoice-filter-month" class="premium-filter-select">
+                            <option value="all">Tất cả thời gian</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                    </div>
                     <!-- Button Create Invoice removed here as requested -->
                     <button class="btn-primary" onclick="exportRevenueReport()"
                         style="width: auto; background: #10b981;">

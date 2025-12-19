@@ -1607,6 +1607,7 @@ select:focus {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
 }
+
 /* Text Truncation */
 .text-truncate {
     white-space: nowrap;
@@ -1733,7 +1734,68 @@ select:focus {
     width: 5px;
 }
 
+/* Premium Filter Select */
+.filter-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.filter-wrapper i.calendar-icon {
+    position: absolute;
+    left: 1rem;
+    color: #3b82f6;
+    pointer-events: none;
+    font-size: 0.9rem;
+    z-index: 1;
+}
+
+.premium-filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0.6rem 2.5rem 0.6rem 2.5rem;
+    background: rgba(30, 41, 59, 0.6) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0.75rem !important;
+    color: white !important;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.premium-filter-select:hover {
+    border-color: #3b82f6 !important;
+    background: rgba(30, 41, 59, 0.8) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.premium-filter-select:focus {
+    outline: none;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.filter-wrapper .chevron-icon {
+    position: absolute;
+    right: 1rem;
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 0.8rem;
+    z-index: 1;
+}
+
 #mkt-detail-body::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
+}
+
+#mkt-detail-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
