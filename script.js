@@ -1418,6 +1418,9 @@ const maintenanceForm = document.getElementById('maintenance-form');
 const maintenanceListBody = document.getElementById('maintenance-list-body');
 const btnOpenMaintenanceModal = document.getElementById('btn-open-maintenance-modal');
 const closeMaintenanceModalBtn = document.getElementById('close-maintenance-modal');
+const maintDetailModal = document.getElementById('maint-detail-modal');
+const maintDetailBody = document.getElementById('maint-detail-body');
+const closeMaintDetailBtn = document.getElementById('close-maint-detail');
 
 async function loadMaintenanceRequests() {
     try {
@@ -1446,6 +1449,8 @@ function renderMaintenanceList() {
 
     maintenanceRequests.forEach(req => {
         const tr = document.createElement('tr');
+        tr.className = 'maint-row-clickable';
+        tr.onclick = () => viewMaintDetail(req._id);
 
         const typeIcon = req.type === 'maintenance' ? 'fa-wrench' : 'fa-comment-alt';
         const typeLabel = req.type === 'maintenance' ? 'Bảo trì' : 'Góp ý';
@@ -1465,21 +1470,21 @@ function renderMaintenanceList() {
         if (isAdmin) {
             actions = `
                 <div class="action-btns">
-                    ${req.status === 'pending' ? `<button class="btn-icon success" onclick="updateMaintStatus('${req._id}', 'in-progress')" title="Bắt đầu sửa"><i class="fa-solid fa-play"></i></button>` : ''}
-                    ${['pending', 'in-progress'].includes(req.status) ? `<button class="btn-icon success" onclick="updateMaintStatus('${req._id}', 'completed')" title="Xong"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                    <button class="btn-icon danger" onclick="deleteMaintRequest('${req._id}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                    ${req.status === 'pending' ? `<button class="btn-icon success" onclick="event.stopPropagation(); updateMaintStatus('${req._id}', 'in-progress')" title="Bắt đầu sửa"><i class="fa-solid fa-play"></i></button>` : ''}
+                    ${['pending', 'in-progress'].includes(req.status) ? `<button class="btn-icon success" onclick="event.stopPropagation(); updateMaintStatus('${req._id}', 'completed')" title="Xong"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                    <button class="btn-icon danger" onclick="event.stopPropagation(); deleteMaintRequest('${req._id}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
         } else if (req.status === 'pending') {
-            actions = `<button class="btn-icon danger" onclick="updateMaintStatus('${req._id}', 'cancelled')" title="Hủy yêu cầu"><i class="fa-solid fa-ban"></i></button>`;
+            actions = `<button class="btn-icon danger" onclick="event.stopPropagation(); updateMaintStatus('${req._id}', 'cancelled')" title="Hủy yêu cầu"><i class="fa-solid fa-ban"></i></button>`;
         }
 
         tr.innerHTML = `
             <td>${date}</td>
             <td><strong>${req.roomName}</strong></td>
             <td>
-                <div style="font-weight: 500;">${req.title}</div>
-                <small style="color: var(--text-secondary); display: block; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${req.description}</small>
+                <div class="text-truncate" style="font-weight: 500; max-width: 200px;">${req.title}</div>
+                <small class="text-truncate" style="color: var(--text-secondary); max-width: 250px;">${req.description}</small>
             </td>
             <td><i class="fa-solid ${typeIcon} maint-type-icon"></i> ${typeLabel}</td>
             <td><span class="priority-badge priority-${req.priority}">${req.priority === 'high' ? 'Khẩn cấp' : (req.priority === 'medium' ? 'Thường' : 'Thấp')}</span></td>
@@ -1489,6 +1494,69 @@ function renderMaintenanceList() {
         maintenanceListBody.appendChild(tr);
     });
 }
+
+function viewMaintDetail(id) {
+    const req = maintenanceRequests.find(r => r._id === id);
+    if (!req) return;
+
+    let statusText = '';
+    switch (req.status) {
+        case 'pending': statusText = 'Chờ xử lý'; break;
+        case 'in-progress': statusText = 'Đang sửa'; break;
+        case 'completed': statusText = 'Hoàn thành'; break;
+        case 'cancelled': statusText = 'Đã hủy'; break;
+    }
+
+    const typeLabel = req.type === 'maintenance' ? 'Bảo trì / Sửa chữa' : 'Ý kiến đóng góp';
+    const date = new Date(req.createdAt).toLocaleString('vi-VN');
+
+    maintDetailBody.innerHTML = `
+        <div class="detail-row">
+            <span class="detail-label">Phòng</span>
+            <div class="detail-value"><strong>${req.roomName}</strong></div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Loại yêu cầu</span>
+            <div class="detail-value">${typeLabel}</div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Thời gian gửi</span>
+            <div class="detail-value">${date}</div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Mức độ ưu tiên</span>
+            <div class="detail-value">
+                <span class="priority-badge priority-${req.priority}">
+                    ${req.priority === 'high' ? 'KHẨN CẤP' : (req.priority === 'medium' ? 'THƯỜNG' : 'THẤP')}
+                </span>
+            </div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Trạng thái</span>
+            <div class="detail-value"><span class="status-badge ${req.status}">${statusText}</span></div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Tiêu đề</span>
+            <div class="detail-value"><strong>${req.title}</strong></div>
+        </div>
+        <div class="detail-row" style="border-bottom: none;">
+            <span class="detail-label">Nội dung chi tiết</span>
+            <div class="detail-value" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; white-space: pre-wrap;">${req.description}</div>
+        </div>
+    `;
+
+    maintDetailModal.classList.remove('hidden');
+}
+
+if (closeMaintDetailBtn) {
+    closeMaintDetailBtn.onclick = () => maintDetailModal.classList.add('hidden');
+}
+
+window.addEventListener('click', (e) => {
+    if (e.target === maintDetailModal) {
+        maintDetailModal.classList.add('hidden');
+    }
+});
 
 if (btnOpenMaintenanceModal) {
     btnOpenMaintenanceModal.onclick = () => {
