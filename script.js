@@ -783,6 +783,39 @@ btnConfirmDelete.onclick = async (e) => {
             statusEl.textContent = 'Còn trống';
             statusEl.style.background = 'rgba(16, 185, 129, 0.2)';
             statusEl.style.color = '#10b981';
+
+            // AUTO-DELETE CONTRACT logic
+            // Nếu phòng trống, tự động xóa hợp đồng liên quan
+            try {
+                const token = localStorage.getItem('authToken');
+                // Lấy danh sách hợp đồng
+                const cRes = await fetch(`${API_URL}/contracts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const cData = await cRes.json();
+
+                if (cData.success && cData.data) {
+                    // Tìm hợp đồng active của phòng này
+                    const activeContract = cData.data.find(c => c.roomId === currentRoomId && c.status === 'active');
+
+                    if (activeContract) {
+                        console.log(`Found active contract ${activeContract._id} for empty room ${currentRoomId}. Deleting...`);
+
+                        // Xóa hợp đồng
+                        await fetch(`${API_URL}/contracts/${activeContract._id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+
+                        alert(`ℹ️ Phòng đã trống. Hệ thống đã tự động kết thúc hợp đồng thuê của phòng này.`);
+
+                        // Refresh contract stats if visible
+                        if (typeof loadContracts === 'function') loadContracts();
+                    }
+                }
+            } catch (err) {
+                console.error("Error auto-deleting contract:", err);
+            }
         }
 
         // 4. Save Apartment Data to Server in background
