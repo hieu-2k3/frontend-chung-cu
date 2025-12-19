@@ -1475,26 +1475,45 @@
             const container = document.getElementById('user-contract-section');
             if (!container) return;
 
-            if (!window.userHasRoom) {
-                container.innerHTML = '<div class="glass-panel" style="padding: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">Bạn sẽ xem được hợp đồng sau khi được gán vào phòng.</div>';
-                return;
-            }
+            // Show loading state
+            container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #ccc;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải hợp đồng...</div>';
 
             try {
                 const token = localStorage.getItem('authToken');
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+                // 1. Get current room info to know myRoomId
+                const aptRes = await fetch(`${API_URL}/apartments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const aptData = await aptRes.json();
+                const myRoom = (aptData.data || []).find(room =>
+                    room.residents && room.residents.some(r => r.phoneLogin === currentUser.phone)
+                );
+                const myRoomId = myRoom ? myRoom.id : null;
+
+                if (!myRoomId && currentUser.role !== 'admin') {
+                    container.innerHTML = '<div class="glass-panel" style="padding: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">Bạn sẽ xem được hợp đồng sau khi được gán vào phòng.</div>';
+                    return;
+                }
+
+                // 2. Fetch contracts
                 const res = await fetch(`${API_URL}/contracts`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const result = await res.json();
 
-                // Client-side filtering to ensure privacy (especially valuable if admin is viewing user mode)
-                // Filter: Only show contracts belonging to the current logged-in user phone
-                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-                const myPhoneNormal = (currentUser.phone || '').replace(/\D/g, ''); // Normalize phone
+                // 3. Filter Logic
+                // - Show if it's MY contract (history)
+                // - OR if it's the ACTIVE contract of my CURRENT room (for roommates)
+                const myPhoneNormal = (currentUser.phone || '').replace(/\D/g, '');
 
-                const filteredContracts = result.data.filter(c => {
+                const filteredContracts = (result.data || []).filter(c => {
                     const cPhone = (c.tenantPhone || '').replace(/\D/g, '');
-                    return cPhone === myPhoneNormal;
+                    const isMyContract = (cPhone === myPhoneNormal);
+                    const isCurrentRoomActive = (myRoomId && c.roomId === myRoomId && c.status === 'active');
+
+                    return isMyContract || isCurrentRoomActive;
                 });
 
                 if (filteredContracts.length === 0) {
