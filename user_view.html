@@ -299,7 +299,7 @@
                 <div id="user-announcement-list"></div>
             </div>
             <!-- Market Section -->
-            <div class="glass-panel" style="margin-bottom: 2rem;">
+            <div id="user-market-section" class="glass-panel" style="margin-bottom: 2rem;">
                 <div class="section-header"
                     style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
                     <h2 class="section-title" style="margin-bottom: 0; border: none; padding: 0;"><i
@@ -595,15 +595,21 @@
                 // Refresh restricted sections and control button visibility
                 const marketBtn = document.getElementById('btn-open-market-modal');
                 const maintBtn = document.getElementById('btn-user-open-maintenance');
+                const announcementSection = document.getElementById('user-announcement-section');
+                const marketSection = document.getElementById('user-market-section');
 
                 if (!window.userHasRoom) {
                     renderRestrictedPlaceholder('user-invoice-list', 'hóa đơn');
                     renderRestrictedPlaceholder('user-maintenance-list', 'yêu cầu');
                     if (marketBtn) marketBtn.style.display = 'none';
                     if (maintBtn) maintBtn.style.display = 'none';
+                    if (announcementSection) announcementSection.style.display = 'none';
+                    if (marketSection) marketSection.style.display = 'none';
                 } else {
                     if (marketBtn) marketBtn.style.display = 'block';
                     if (maintBtn) maintBtn.style.display = 'block';
+                    if (marketSection) marketSection.style.display = 'block';
+                    // Announcement section visibility is controlled by loadUserAnnouncements
                 }
 
                 if (!myRoom) {
@@ -622,8 +628,8 @@
                                     Tài khoản <b>${userPhone}</b> của bạn đã sẵn sàng. Hiện tại Ban quản lý đang kiểm tra thông tin để gán bạn vào đúng số phòng của mình.
                                 </p>
                                 <div class="onboarding-features">
-                                    <div class="feature-tag active"><i class="fa-solid fa-bullhorn"></i> Tin tức</div>
-                                    <div class="feature-tag active"><i class="fa-solid fa-store"></i> Chợ cư dân</div>
+                                    <div class="feature-tag"><i class="fa-solid fa-bullhorn"></i> Tin tức</div>
+                                    <div class="feature-tag"><i class="fa-solid fa-store"></i> Chợ cư dân</div>
                                     <div class="feature-tag"><i class="fa-solid fa-camera"></i> Đăng tin</div>
                                     <div class="feature-tag"><i class="fa-solid fa-wrench"></i> Bảo trì</div>
                                 </div>
@@ -995,6 +1001,12 @@
         let currentAnnData = [];
 
         async function loadUserAnnouncements() {
+            if (!window.userHasRoom) {
+                const section = document.getElementById('user-announcement-section');
+                if (section) section.style.display = 'none';
+                return;
+            }
+
             try {
                 const token = localStorage.getItem('authToken');
                 const res = await fetch(`${API_URL}/announcements`, {
@@ -1177,6 +1189,11 @@
         async function loadMarketItems() {
             const list = document.getElementById('user-market-list');
             if (!list) return;
+
+            if (!window.userHasRoom) {
+                list.innerHTML = '<div style="text-align: center; color: #64748b; width: 100%; padding: 2rem;">Bạn cần được gán vào phòng để xem Chợ cư dân.</div>';
+                return;
+            }
 
             try {
                 const token = localStorage.getItem('authToken');
