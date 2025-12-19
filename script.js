@@ -1698,7 +1698,9 @@ async function loadAnnouncements() {
                                 <h4 class="text-truncate" style="margin: 0; color: white; font-size: 1rem; flex: 1;">${ann.title}</h4>
                             </div>
                             <div class="text-truncate" style="color: #94a3b8; font-size: 0.85rem;">${ann.content}</div>
-                            <span style="font-size: 0.7rem; color: #64748b; margin-top: 0.25rem; display: block;">${date}</span>
+                            <span style="font-size: 0.7rem; color: #64748b; margin-top: 0.25rem; display: block;">
+                                <i class="fa-solid fa-user-edit" style="font-size: 0.65rem;"></i> ${ann.createdBy || 'BQL'} • ${date}
+                            </span>
                         </div>
                         <button onclick="event.stopPropagation(); deleteAnnouncement('${ann._id}')" class="btn-delete-ann" style="background: none; border: none; color: #ef4444; opacity: 0.6; cursor: pointer; padding: 0.25rem; margin-left: 0.5rem;">
                             <i class="fa-solid fa-trash" style="font-size: 0.85rem;"></i>
@@ -1735,11 +1737,12 @@ function viewAnnouncementDetail(ann) {
 
     body.innerHTML = `
         <div style="margin-bottom: 1.5rem;">
-            <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; align-items: center;">
                 <span style="background: ${colorStyle}20; color: ${colorStyle}; padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
                     ${typeName}
                 </span>
-                <span style="color: var(--text-secondary); font-size: 0.85rem;">${date}</span>
+                <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fa-regular fa-clock"></i> ${date}</span>
+                <span style="color: var(--text-secondary); font-size: 0.85rem;">• <i class="fa-solid fa-user-pen"></i> Người đăng: <strong>${ann.createdBy || 'Ban Quản Lý'}</strong></span>
             </div>
             <h3 style="color: white; font-size: 1.4rem; line-height: 1.3; margin-bottom: 1rem;">${ann.title}</h3>
             <div style="color: #cbd5e1; line-height: 1.6; font-size: 1.05rem; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: 0.75rem;">${ann.content}</div>
