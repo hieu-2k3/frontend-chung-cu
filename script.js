@@ -948,7 +948,7 @@ window.openAllResidentsModal = () => {
                 <td>${idx + 1}</td>
                 <td><strong>${res.name}</strong></td>
                 <td><span class="room-badge">P.${res.roomName}</span></td>
-                <td>${res.phone || '-'}</td>
+                <td>${res.phoneLogin || '-'}</td>
                 <td>${res.gender}</td>
                 <td>${res.job || '-'}</td>
             `;
