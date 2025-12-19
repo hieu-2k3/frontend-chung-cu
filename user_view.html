@@ -1487,7 +1487,17 @@
                 });
                 const result = await res.json();
 
-                if (!result.success || !result.data || result.data.length === 0) {
+                // Client-side filtering to ensure privacy (especially valuable if admin is viewing user mode)
+                // Filter: Only show contracts belonging to the current logged-in user phone
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                const myPhoneNormal = (currentUser.phone || '').replace(/\D/g, ''); // Normalize phone
+
+                const filteredContracts = result.data.filter(c => {
+                    const cPhone = (c.tenantPhone || '').replace(/\D/g, '');
+                    return cPhone === myPhoneNormal;
+                });
+
+                if (filteredContracts.length === 0) {
                     container.innerHTML = `
                          <div class="glass-panel" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
                             <div style="opacity: 0.2; font-size: 3rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-file-signature"></i></div>
@@ -1497,10 +1507,10 @@
                     return;
                 }
 
-                window.userContracts = result.data;
+                window.userContracts = filteredContracts;
 
                 // Sort: Active first, then by date desc
-                const sortedContracts = result.data.sort((a, b) => {
+                const sortedContracts = filteredContracts.sort((a, b) => {
                     if (a.status === 'active' && b.status !== 'active') return -1;
                     if (a.status !== 'active' && b.status === 'active') return 1;
                     return new Date(b.endDate) - new Date(a.endDate);
