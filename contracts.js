@@ -131,14 +131,17 @@ window.openCreateContractModal = function () {
     contractTerms = [];
     renderContractTerms();
 
-    // Populate room dropdown
+    // Populate room dropdown - only show occupied rooms
     const roomSelect = document.getElementById('contract-room');
     roomSelect.innerHTML = '<option value="">-- Chọn phòng --</option>';
     buildingState.filter(item => item.type === 'room').forEach(room => {
-        const opt = document.createElement('option');
-        opt.value = room.id;
-        opt.textContent = `Phòng ${room.id}`;
-        roomSelect.appendChild(opt);
+        // Only add rooms that have residents
+        if (room.residents && room.residents.length > 0) {
+            const opt = document.createElement('option');
+            opt.value = room.id;
+            opt.textContent = `Phòng ${room.id} (${room.residents.length} người)`;
+            roomSelect.appendChild(opt);
+        }
     });
 
     document.getElementById('create-contract-modal').classList.remove('hidden');
