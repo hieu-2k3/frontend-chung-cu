@@ -17,6 +17,12 @@
             margin: 0 auto;
         }
 
+        .contract-hover-effect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
         .section-title {
             color: white;
             font-size: 1.5rem;
@@ -1483,74 +1489,109 @@
 
                 if (!result.success || !result.data || result.data.length === 0) {
                     container.innerHTML = `
-                         <div class="glass-panel" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">
-                            <i class="fa-solid fa-file-signature" style="margin-bottom: 0.5rem; opacity: 0.5; font-size: 1.5rem;"></i>
-                            <p style="font-size: 0.9rem; margin: 0;">Chưa có hợp đồng nào.</p>
+                         <div class="glass-panel" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                            <div style="opacity: 0.2; font-size: 3rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-file-signature"></i></div>
+                            <p style="font-size: 0.95rem; margin: 0;">Hiện chưa có hợp đồng nào.</p>
                         </div>
                     `;
                     return;
                 }
 
-                // Store contracts globally for modal access
                 window.userContracts = result.data;
 
-                // Create a scrollable container wrapper
-                let html = `
-                    <div class="glass-panel" style="padding: 0.5rem; max-height: 300px; overflow-y: auto; scrollbar-width: thin;">
-                `;
-
-                // Render all contracts (Active first)
+                // Sort: Active first, then by date desc
                 const sortedContracts = result.data.sort((a, b) => {
-                    // Active first, then by endDate desc
                     if (a.status === 'active' && b.status !== 'active') return -1;
                     if (a.status !== 'active' && b.status === 'active') return 1;
                     return new Date(b.endDate) - new Date(a.endDate);
                 });
 
+                let html = `<div style="display: grid; gap: 1rem;">`;
+
                 sortedContracts.forEach(contract => {
                     const now = new Date();
                     const endDate = new Date(contract.endDate);
+                    const startDate = new Date(contract.startDate);
                     const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
 
-                    let statusColor = '#94a3b8'; // gray
-                    let statusText = 'Đã kết thúc';
+                    let statusConfig = { color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', text: 'Đã kết thúc', icon: 'fa-check' };
+                    let cardOpacity = '0.7';
 
                     if (contract.status === 'active') {
+                        cardOpacity = '1';
                         if (daysLeft < 0) {
-                            statusColor = '#ef4444'; // red
-                            statusText = 'Hết hạn';
+                            statusConfig = { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', text: 'Quá hạn', icon: 'fa-triangle-exclamation' };
                         } else if (daysLeft <= 30) {
-                            statusColor = '#fbbf24'; // yellow
-                            statusText = `Còn ${daysLeft} ngày`;
+                            statusConfig = { color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.15)', text: `Hết hạn trong ${daysLeft} ngày`, icon: 'fa-clock' };
                         } else {
-                            statusColor = '#10b981'; // green
-                            statusText = 'Hiệu lực';
+                            statusConfig = { color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', text: 'Đang hiệu lực', icon: 'fa-circle-check' };
                         }
                     }
 
-                    // Compact Card Design
                     html += `
                         <div onclick="viewUserContractDetail('${contract._id}')" 
-                             style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.5rem; cursor: pointer; transition: background 0.2s; border-left: 3px solid ${statusColor};">
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                                <div style="font-weight: 600; font-size: 0.95rem; color: #e2e8f0;">
-                                    Phòng ${contract.roomName}
+                             class="glass-panel contract-hover-effect"
+                             style="
+                                padding: 0; 
+                                overflow: hidden; 
+                                cursor: pointer; 
+                                transition: all 0.2s ease;
+                                opacity: ${cardOpacity};
+                                position: relative;
+                                border: 1px solid rgba(255,255,255,0.05);
+                             ">
+                            <!-- Header Bar -->
+                            <div style="padding: 1rem 1.25rem; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="background: var(--accent-blue); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;">
+                                        <i class="fa-solid fa-file-contract"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 1rem; color: #fff;">Phòng ${contract.roomName}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">Số HĐ: #${contract._id.substr(-6).toUpperCase()}</div>
+                                    </div>
                                 </div>
-                                <span style="font-size: 0.75rem; background: ${statusColor}20; color: ${statusColor}; padding: 0.1rem 0.5rem; border-radius: 1rem;">
-                                    ${statusText}
+                                <span style="
+                                    background: ${statusConfig.bg}; 
+                                    color: ${statusConfig.color}; 
+                                    padding: 0.35rem 0.75rem; 
+                                    border-radius: 2rem; 
+                                    font-size: 0.75rem; 
+                                    font-weight: 600; 
+                                    display: flex; 
+                                    align-items: center; 
+                                    gap: 0.4rem;
+                                    border: 1px solid ${statusConfig.color}20;
+                                ">
+                                    <i class="fa-solid ${statusConfig.icon}"></i> ${statusConfig.text}
                                 </span>
                             </div>
 
-                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary);">
-                                <span>${new Date(contract.startDate).toLocaleDateString('vi-VN')} - ${endDate.toLocaleDateString('vi-VN')}</span>
-                                <span style="color: var(--accent-green); font-weight: 500;">${contract.monthlyRent.toLocaleString()}đ</span>
+                            <!-- Body Info -->
+                            <div style="padding: 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;">Thời hạn thuê</div>
+                                    <div style="font-size: 0.9rem; color: #e2e8f0; font-weight: 500;">
+                                        ${startDate.toLocaleDateString('vi-VN')} <i class="fa-solid fa-arrow-right" style="font-size: 0.7rem; color: #64748b; margin: 0 0.3rem;"></i> ${endDate.toLocaleDateString('vi-VN')}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;">Giá thuê</div>
+                                    <div style="font-size: 1.1rem; color: var(--accent-green); font-weight: 700; display: flex; align-items: baseline; gap: 0.2rem;">
+                                        ${contract.monthlyRent.toLocaleString()} <span style="font-size: 0.8rem; font-weight: 400; color: #94a3b8;">vnđ/tháng</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Hover Hint (Mobile Visible / Desktop Hover) -->
+                            <div style="padding: 0.6rem 1.25rem; background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.03); text-align: right;">
+                                <span style="font-size: 0.8rem; color: var(--accent-blue); font-weight: 500;">Xem chi tiết <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i></span>
                             </div>
                         </div>
                     `;
                 });
 
-                html += '</div>'; // Close wrapper
+                html += `</div>`;
                 container.innerHTML = html;
 
             } catch (error) {
