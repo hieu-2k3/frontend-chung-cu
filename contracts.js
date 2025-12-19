@@ -386,4 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterEl) {
         filterEl.onchange = renderContracts;
     }
+
+    // Initial load for statistics
+    if (localStorage.getItem('authToken')) {
+        loadContracts();
+    }
 });
