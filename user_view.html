@@ -1137,9 +1137,9 @@
                                 <div class="text-truncate" style="font-size: 0.8rem; color: #94a3b8;">
                                     <i class="fa-solid fa-phone" style="font-size: 0.7rem;"></i> ${item.contactPhone}
                                 </div>
-                                <p class="text-truncate" style="font-size: 0.8rem; color: #64748b; margin-top: 0.3rem;">
-                                    ${item.description || 'Không có mô tả'}
-                                </p>
+                                <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.3rem;">
+                                    <i class="fa-solid fa-house-user" style="font-size: 0.7rem;"></i> ${item.roomName || 'N/A'}
+                                </div>
                             </div>
                         `;
                     }).join('');
@@ -1166,10 +1166,14 @@
                         <span class="price-tag" style="font-size: 1.2rem; padding: 0.4rem 1rem;">${item.price.toLocaleString()} đ</span>
                     </div>
 
-                    <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem;">
                         <div>
                             <span style="display: block; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Liên hệ</span>
                             <strong style="color: #10b981; font-size: 1.1rem;"><i class="fa-solid fa-phone"></i> ${item.contactPhone}</strong>
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Phòng</span>
+                            <strong style="color: #3b82f6; font-size: 1.1rem;"><i class="fa-solid fa-house-circle-check"></i> ${item.roomName || 'N/A'}</strong>
                         </div>
                         <div>
                             <span style="display: block; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Ngày đăng</span>
@@ -1249,11 +1253,22 @@
                     return;
                 }
 
+                // Find user's room
+                const apartmentsRes = await fetch(`${API_URL}/apartments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const apartmentsData = await apartmentsRes.json();
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const myRoom = apartmentsData.data.find(room =>
+                    room.residents && room.residents.some(r => r.phoneLogin === currentUser.phone)
+                );
+
                 const data = {
                     title: document.getElementById('mkt-title').value,
                     price: parseFloat(document.getElementById('mkt-price').value),
                     contactPhone: document.getElementById('mkt-phone').value,
                     description: document.getElementById('mkt-desc').value,
+                    roomName: myRoom ? `Phòng ${myRoom.id}` : (currentUser.role === 'admin' ? 'BQL' : 'N/A'),
                     image: currentMarketMedia
                 };
 
