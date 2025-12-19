@@ -1370,6 +1370,15 @@ if (resetExecuteBtn) {
         resetExecuteBtn.disabled = true;
         resetExecuteBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang Reset...';
 
+        // Create Full-screen Loading Overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'reset-loading-overlay';
+        overlay.innerHTML = `
+            <i class="fa-solid fa-triangle-exclamation fa-beat"></i>
+            <p>Đang dọn dẹp hệ thống, vui lòng không tắt trình duyệt...</p>
+        `;
+        document.body.appendChild(overlay);
+
         try {
             const token = localStorage.getItem('authToken');
             const response = await fetch(`${API_URL}/system/reset`, {
@@ -1379,16 +1388,27 @@ if (resetExecuteBtn) {
 
             const data = await response.json();
             if (data.success) {
+                // Clear any legacy local storage
                 localStorage.removeItem('buildingResidentData');
                 localStorage.removeItem('apartmentData');
-                alert("✅ " + data.message);
-                location.reload();
+
+                // Keep the overlay for a second to feel the "cleanliness"
+                overlay.innerHTML = `
+                    <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+                    <p>${data.message}</p>
+                `;
+
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
             } else {
+                document.body.removeChild(overlay);
                 alert("❌ Lỗi: " + data.message);
                 resetExecuteBtn.disabled = false;
                 resetExecuteBtn.innerHTML = 'Xác Nhận Xoá Hết';
             }
         } catch (err) {
+            document.body.removeChild(overlay);
             console.error("Reset error:", err);
             alert("❌ Lỗi kết nối khi gửi lệnh Reset.");
             resetExecuteBtn.disabled = false;
