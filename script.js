@@ -826,10 +826,11 @@ async function checkPendingUsers() {
         if (result.success && result.data.length > 0) {
             pendingUsersState = result.data;
             countEl.textContent = result.data.length;
-            card.style.display = 'flex';
+            // card.style.display = 'flex'; // Always visible now
         } else {
             pendingUsersState = [];
-            card.style.display = 'none';
+            countEl.textContent = '0';
+            // card.style.display = 'none'; // Always visible now
         }
     } catch (err) {
         console.error("Error checking pending users:", err);
