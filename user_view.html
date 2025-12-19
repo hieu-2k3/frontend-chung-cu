@@ -1419,10 +1419,15 @@
         });
 
         // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            loadDirectory();
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Priority 1: Check room assignment first
+            await loadDirectory();
+
+            // Priority 2: Load features that might depend on room assignment
             loadInvoices();
             loadMaintenance();
+
+            // Independent features
             loadUserAnnouncements();
             loadMarketItems();
         });
