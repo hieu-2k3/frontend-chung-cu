@@ -1318,8 +1318,20 @@ openInvoiceModalBtn.onclick = () => {
     // Auto-calculate parking fee when room is selected
     invRoomSelect.onchange = () => {
         const roomId = invRoomSelect.value;
+        if (!roomId) return;
+
         const room = buildingState.find(r => r.id === roomId);
-        if (room) {
+        if (room && room.residents) {
+            if (room.residents.length === 0) {
+                alert(`Phòng ${roomId} hiện đang trống. Không thể tạo hóa đơn cho phòng không có cư dân.`);
+                invRoomSelect.value = "";
+                document.getElementById('inv-representative').value = '';
+                document.getElementById('inv-resident-count').value = 0;
+                calculateInvoiceTotal();
+                return;
+            }
+            document.getElementById('inv-representative').value = room.residents[0].name;
+            document.getElementById('inv-resident-count').value = room.residents.length;
             calculateInvoiceTotal();
         }
     };
@@ -1371,26 +1383,6 @@ function calculateInvoiceTotal() {
     if (el) el.oninput = calculateInvoiceTotal;
 });
 
-// Auto fill when room selected
-invRoomSelect.onchange = () => {
-    const roomId = invRoomSelect.value;
-    if (!roomId) return;
-
-    const room = buildingState.find(r => r.id === roomId);
-    if (room && room.residents) {
-        if (room.residents.length === 0) {
-            alert(`Phòng ${roomId} hiện đang trống. Không thể tạo hóa đơn cho phòng không có cư dân.`);
-            invRoomSelect.value = "";
-            document.getElementById('inv-representative').value = '';
-            document.getElementById('inv-resident-count').value = 0;
-            calculateInvoiceTotal();
-            return;
-        }
-        document.getElementById('inv-representative').value = room.residents.length > 0 ? room.residents[0].name : '';
-        document.getElementById('inv-resident-count').value = room.residents.length;
-        calculateInvoiceTotal();
-    }
-};
 
 invoiceForm.onsubmit = async (e) => {
     e.preventDefault();
