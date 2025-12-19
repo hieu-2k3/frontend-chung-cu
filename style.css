@@ -1545,3 +1545,43 @@ select:focus {
     margin-bottom: 0 !important;
     /* Override inline style if any */
 }
+/* ==================== DASHBOARD IMPROVEMENTS ==================== */
+/* Split Layout for Announcement & Market */
+.dashboard-split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+    .dashboard-split-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Fix height for admin lists to avoid page getting too long */
+#admin-announcement-list,
+#admin-market-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for these lists */
+#admin-announcement-list::-webkit-scrollbar,
+#admin-market-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#admin-announcement-list::-webkit-scrollbar-track,
+#admin-market-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#admin-announcement-list::-webkit-scrollbar-thumb,
+#admin-market-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}

@@ -84,28 +84,31 @@
             </div>
     </div>
 
-    <!-- Announcement Section (Admin View) -->
-    <div class="glass-panel" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">
-        <div class="section-header" style="margin-bottom: 1rem;">
-            <h2><i class="fa-solid fa-bullhorn"></i> Bảng Tin Thông Báo</h2>
-            <button class="btn-primary" onclick="openAnnouncementModal()" style="width: auto;">
-                <i class="fa-solid fa-plus"></i> Đăng Thông Báo
-            </button>
+    <div class="dashboard-split-grid">
+        <!-- Announcement Section (Admin View) -->
+        <div class="glass-panel" style="display: flex; flex-direction: column;">
+            <div class="section-header" style="margin-bottom: 1rem;">
+                <h2><i class="fa-solid fa-bullhorn"></i> Bảng Tin</h2>
+                <button class="btn-primary" onclick="openAnnouncementModal()"
+                    style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    <i class="fa-solid fa-plus"></i> Đăng
+                </button>
+            </div>
+            <div class="announcement-grid" id="admin-announcement-list" style="flex: 1;">
+                <!-- Announcements will go here -->
+            </div>
         </div>
-        <div class="announcement-grid" id="admin-announcement-list">
-            <!-- Announcements will go here -->
-        </div>
-    </div>
 
-    <!-- Market Management Section -->
-    <div class="glass-panel" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">
-        <div class="section-header" style="margin-bottom: 1rem;">
-            <h2><i class="fa-solid fa-store"></i> Quản Lý Chợ Cư Dân</h2>
-            <span style="font-size: 0.9rem; color: #ccc;">(Admin kiểm duyệt và xóa tin vi phạm)</span>
-        </div>
-        <div class="announcement-grid" id="admin-market-list">
-            <!-- Market items will be loaded here using the same grid style -->
-            <div style="text-align: center; color: #aaa; padding: 2rem;">Đang tải tin...</div>
+        <!-- Market Management Section -->
+        <div class="glass-panel" style="display: flex; flex-direction: column;">
+            <div class="section-header" style="margin-bottom: 1rem;">
+                <h2><i class="fa-solid fa-store"></i> Chợ Cư Dân</h2>
+                <span style="font-size: 0.8rem; color: #ccc; font-style: italic;">(Duyệt tin)</span>
+            </div>
+            <div class="announcement-grid" id="admin-market-list" style="flex: 1;">
+                <!-- Market items will be loaded here -->
+                <div style="text-align: center; color: #aaa; padding: 2rem;">Đang tải tin...</div>
+            </div>
         </div>
     </div>
 
