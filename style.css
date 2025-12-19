@@ -339,6 +339,20 @@ body {
     border-color: rgba(245, 158, 11, 0.4);
 }
 
+.stat-purple {
+    color: #a855f7;
+}
+
+.stat-purple .stat-icon-wrapper {
+    background: rgba(168, 85, 247, 0.15);
+    box-shadow: 0 8px 16px -4px rgba(168, 85, 247, 0.2);
+}
+
+.stat-purple:hover {
+    background: linear-gradient(145deg, rgba(168, 85, 247, 0.1), rgba(30, 41, 59, 0.8));
+    border-color: rgba(168, 85, 247, 0.4);
+}
+
 /* Building Diagram */
 .section-header {
     display: flex;

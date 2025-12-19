@@ -113,6 +113,7 @@ async function fetchDataFromServer() {
             // Update UI after fetch
             updateStats();
             renderBuilding();
+            checkPendingUsers(); // Also check for unassigned users
         }
     } catch (error) {
         console.error("Lỗi tải dữ liệu từ server:", error);
@@ -147,6 +148,7 @@ async function saveData() {
                 body: JSON.stringify({ data: dataToSave })
             });
             console.log("Saved to Server success!");
+            checkPendingUsers(); // Refresh pending list after assign
 
             // Re-load invoices to ensure data is synced
             loadInvoices();
@@ -384,6 +386,21 @@ function openModal(roomId) {
 
     renderResidentList(room.residents);
     modal.classList.remove('hidden');
+
+    // Auto-fill if we are in "Pending Assignment" mode
+    if (window.pendingAssignUser) {
+        const inpName = document.getElementById('inp-name');
+        const inpPhone = document.getElementById('inp-phone-login');
+        if (inpName) inpName.value = window.pendingAssignUser.name;
+        if (inpPhone) inpPhone.value = window.pendingAssignUser.phone;
+
+        // Focus on the next logical field if possible
+        const inpDob = document.getElementById('inp-dob');
+        if (inpDob) inpDob.focus();
+
+        // Clear the state after pre-filling to prevent accidental fills later
+        window.pendingAssignUser = null;
+    }
 }
 
 function renderResidentList(residents) {
@@ -788,6 +805,91 @@ const closeAllResidentsBtn = document.getElementById('close-all-residents-modal'
 const allResidentsListEl = document.getElementById('all-residents-list');
 const allResidentsCountEl = document.getElementById('all-residents-count');
 const statTotalResidentsCard = document.getElementById('stat-total-residents');
+
+// --- Pending Users Assignment Logic ---
+let pendingUsersState = [];
+window.pendingAssignUser = null;
+
+async function checkPendingUsers() {
+    try {
+        const token = localStorage.getItem('authToken');
+        const res = await fetch(`${API_URL}/users/unassigned`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await res.json();
+
+        const card = document.getElementById('stat-pending-users');
+        const countEl = document.getElementById('pending-users-count');
+
+        if (result.success && result.data.length > 0) {
+            pendingUsersState = result.data;
+            countEl.textContent = result.data.length;
+            card.style.display = 'flex';
+        } else {
+            pendingUsersState = [];
+            card.style.display = 'none';
+        }
+    } catch (err) {
+        console.error("Error checking pending users:", err);
+    }
+}
+
+window.openPendingUsersModal = () => {
+    const listEl = document.getElementById('pending-users-list');
+    listEl.innerHTML = '';
+
+    if (pendingUsersState.length === 0) {
+        listEl.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem;">Không có ai đang chờ.</td></tr>';
+    } else {
+        pendingUsersState.forEach(user => {
+            const tr = document.createElement('tr');
+            const dateStr = new Date(user.createdAt).toLocaleDateString('vi-VN');
+            tr.innerHTML = `
+                <td><strong>${user.name}</strong></td>
+                <td>${user.phone}</td>
+                <td>${dateStr}</td>
+                <td>
+                    <button class="btn-check" onclick="startAssignPending('${user.phone}', '${user.name}')">
+                        <i class="fa-solid fa-link"></i> Gán Phòng
+                    </button>
+                </td>
+            `;
+            listEl.appendChild(tr);
+        });
+    }
+    document.getElementById('pending-users-modal').classList.remove('hidden');
+};
+
+const closePendingModalBtn = document.getElementById('close-pending-users-modal');
+if (closePendingModalBtn) closePendingModalBtn.onclick = () => document.getElementById('pending-users-modal').classList.add('hidden');
+
+// Step 1: Click "Assign" in the pending list
+window.startAssignPending = (phone, name) => {
+    window.pendingAssignUser = { phone, name };
+    document.getElementById('pending-users-modal').classList.add('hidden');
+
+    // Highlight the diagram to prompt room selection
+    const diagram = document.getElementById('building-diagram');
+    diagram.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    diagram.style.outline = '4px solid #a855f7';
+    diagram.style.boxShadow = '0 0 30px rgba(168, 85, 247, 0.4)';
+
+    // Create a temporary floating instruction
+    const toast = document.createElement('div');
+    toast.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#a855f7; color:white; padding:1rem 2rem; border-radius:50px; z-index:10000; box-shadow:0 10px 20px rgba(0,0,0,0.3); font-weight:bold;";
+    toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> Vui lòng chọn một phòng trong sơ đồ để gán cho <b>${name}</b>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        diagram.style.transition = 'all 0.5s';
+        diagram.style.outline = 'none';
+        diagram.style.boxShadow = 'none';
+        setTimeout(() => document.body.removeChild(toast), 4000);
+    }, 5000);
+};
+
+// This matches room click logic. When a room is clicked, we check if pendingAssignUser is set.
+// (Modified rendering logic will handle the fill during room selection)
 
 window.openAllResidentsModal = () => {
     const listEl = document.getElementById('all-residents-list');

@@ -80,6 +80,18 @@
                         </div>
                         <div class="stat-decoration"></div>
                     </div>
+                    <!-- New: Pending Users Card -->
+                    <div class="stat-card glass-panel stat-purple clickable" id="stat-pending-users"
+                        onclick="openPendingUsersModal()" style="display: none;">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-user-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Yêu cầu gán phòng</span>
+                            <h3 id="pending-users-count">0</h3>
+                        </div>
+                        <div class="stat-decoration"></div>
+                    </div>
                 </div>
             </div>
 
@@ -550,6 +562,38 @@
                             </thead>
                             <tbody id="parking-list">
                                 <!-- List items will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Users Assignment Modal -->
+        <div id="pending-users-modal" class="modal hidden">
+            <div class="modal-content glass-panel" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-user-clock"></i> Cư Dân Chờ Gán Phòng</h2>
+                    <span class="close-btn" id="close-pending-users-modal">
+                        <i class="fa-solid fa-xmark"></i>
+                    </span>
+                </div>
+                <div class="modal-body">
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                        Danh sách những người đã đăng ký tài khoản nhưng chưa được gán vào bất kỳ phòng nào.
+                    </p>
+                    <div class="all-residents-scroll-area">
+                        <table class="residents-table">
+                            <thead>
+                                <tr>
+                                    <th>Tên Cư Dân</th>
+                                    <th>Số Điện Thoại</th>
+                                    <th>Ngày Đăng Ký</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-users-list">
+                                <!-- Pending users will be listed here -->
                             </tbody>
                         </table>
                     </div>
