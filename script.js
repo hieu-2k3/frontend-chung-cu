@@ -99,21 +99,23 @@ async function fetchDataFromServer() {
         });
         const data = await response.json();
 
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-            console.log("Loaded data from Server:", data.data);
-            localStorage.setItem('buildingResidentData', JSON.stringify(data.data)); // Backup to local
+        if (data.success && Array.isArray(data.data)) {
+            console.log("Loaded data from Server:", data.data.length, "rooms");
+            if (data.data.length > 0) {
+                localStorage.setItem('buildingResidentData', JSON.stringify(data.data)); // Backup to local
+                // Merge Data
+                data.data.forEach(savedItem => {
+                    const room = buildingState.find(r => r.id === savedItem.id);
+                    if (room && savedItem.residents) {
+                        room.residents = savedItem.residents;
+                    }
+                });
+            }
 
-            // Merge Data
-            data.data.forEach(savedItem => {
-                const room = buildingState.find(r => r.id === savedItem.id);
-                if (room && savedItem.residents) {
-                    room.residents = savedItem.residents;
-                }
-            });
-            // Update UI after fetch
+            // Always update UI and check for pending users
             updateStats();
             renderBuilding();
-            checkPendingUsers(); // Also check for unassigned users
+            checkPendingUsers();
         }
     } catch (error) {
         console.error("Lỗi tải dữ liệu từ server:", error);
