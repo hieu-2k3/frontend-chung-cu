@@ -1643,3 +1643,31 @@ select:focus {
     color: var(--text-primary);
     word-break: break-word;
 }
+
+/* Maintenance Detail Modal Improvements */
+#maint-detail-modal .modal-content {
+    max-width: 500px;
+    width: 90%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#maint-detail-body {
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Custom scrollbar for detail body */
+#maint-detail-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+#maint-detail-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#maint-detail-body::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.5);
+    border-radius: 10px;
+}
