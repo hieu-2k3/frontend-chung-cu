@@ -1571,11 +1571,17 @@ async function loadMaintenanceRequests() {
 }
 
 function renderMaintenanceList() {
-    if (!maintenanceListBody) return;
-    maintenanceListBody.innerHTML = '';
+    const listBody = document.getElementById('maintenance-list-body');
+    if (!listBody) {
+        console.warn("Element 'maintenance-list-body' not found");
+        return;
+    }
 
-    if (maintenanceRequests.length === 0) {
-        maintenanceListBody.innerHTML = '<tr><td colspan="7" class="empty-message">Chưa có yêu cầu hoặc phản hồi nào</td></tr>';
+    console.log("Rendering maintenance list with", maintenanceRequests.length, "items");
+    listBody.innerHTML = '';
+
+    if (!maintenanceRequests || maintenanceRequests.length === 0) {
+        listBody.innerHTML = '<tr><td colspan="7" class="empty-message">Chưa có yêu cầu hoặc phản hồi nào</td></tr>';
         return;
     }
 
@@ -1623,7 +1629,7 @@ function renderMaintenanceList() {
             <td><span class="status-badge ${req.status}">${statusText}</span></td>
             <td>${actions}</td>
         `;
-        maintenanceListBody.appendChild(tr);
+        listBody.appendChild(tr);
     });
 }
 
