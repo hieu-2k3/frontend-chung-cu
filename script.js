@@ -851,15 +851,45 @@ window.openPendingUsersModal = () => {
                 <td>${user.phone}</td>
                 <td>${dateStr}</td>
                 <td>
-                    <button class="btn-check" onclick="startAssignPending('${user.phone}', '${user.name}')">
-                        <i class="fa-solid fa-link"></i> Gán Phòng
-                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-check" onclick="startAssignPending('${user.phone}', '${user.name}')" style="width: auto; padding: 5px 12px; font-size: 0.85rem;">
+                            <i class="fa-solid fa-link"></i> Gán
+                        </button>
+                        <button class="btn-icon danger" onclick="deletePendingUser('${user.phone}')" title="Xóa yêu cầu">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             `;
             listEl.appendChild(tr);
         });
     }
     document.getElementById('pending-users-modal').classList.remove('hidden');
+};
+
+window.deletePendingUser = async (phone) => {
+    if (!confirm(`Bạn có chắc chắn muốn xóa yêu cầu gán phòng của số điện thoại ${phone}? Hành động này sẽ xóa hoàn toàn tài khoản của họ.`)) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('authToken');
+        const res = await fetch(`${API_URL}/users/${phone}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+            // Refresh the list and the stats card
+            await checkPendingUsers();
+            openPendingUsersModal(); // Re-render the modal content
+        } else {
+            alert(data.message || "Không thể xóa tài khoản");
+        }
+    } catch (e) {
+        console.error("Lỗi khi xóa cư dân chờ:", e);
+        alert("Có lỗi xảy ra khi thực hiện thao tác");
+    }
 };
 
 const closePendingModalBtn = document.getElementById('close-pending-users-modal');
