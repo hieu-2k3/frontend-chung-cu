@@ -475,13 +475,6 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Số CCCD (Để xác minh)</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-id-card"></i>
-                        <input type="text" id="reset-cccd" placeholder="Nhập số CCCD đã báo Admin" required>
-                    </div>
-                </div>
-                <div class="form-group">
                     <label>Mật khẩu mới</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-key"></i>
@@ -711,7 +704,6 @@
             e.preventDefault();
             const btn = document.getElementById('reset-btn');
             const phone = document.getElementById('reset-phone').value;
-            const cccd = document.getElementById('reset-cccd').value;
             const newPassword = document.getElementById('reset-new-password').value;
 
             btn.disabled = true;
@@ -721,7 +713,7 @@
                 const response = await fetch(`${API_URL}/forgot-password`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone, cccd, newPassword })
+                    body: JSON.stringify({ phone, newPassword })
                 });
 
                 const data = await response.json();
@@ -732,7 +724,7 @@
                         switchTab('login');
                     }, 2000);
                 } else {
-                    showMessage(data.message || 'Xác thực thất bại', 'error');
+                    showMessage(data.message || 'Lỗi đặt lại mật khẩu', 'error');
                 }
             } catch (error) {
                 showMessage('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
