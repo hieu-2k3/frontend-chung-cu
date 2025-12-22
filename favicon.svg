@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+        <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <path fill="url(#bg-gradient)" d="M112 112c-17.7 0-32 14.3-32 32v336c0 17.7 14.3 32 32 32h288c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H112C94.3 0 80 14.3 80 32v48H32C14.3 80 0 94.3 0 112v336c0 17.7 14.3 32 32 32h48v32c0 17.7 14.3 32 32 32h368c17.7 0 32-14.3 32-32V112c0-17.7-14.3-32-32-32H112zM320 64h48v48h-48V64zm0 96h48v48h-48v-48zm0 96h48v48h-48v-48zm0 96h48v48h-48v-48zM144 64h48v48h-48V64zm0 96h48v48h-48v-48zm0 96h48v48h-48v-48zm0 96h48v48h-48v-48zm224 288v48H144v-48h224z" />
+</svg>
