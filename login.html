@@ -516,13 +516,6 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Số CCCD (Xác minh cư dân)</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-id-card"></i>
-                        <input type="text" id="register-cccd" placeholder="Nhập để xác minh chính chủ" required>
-                    </div>
-                </div>
-                <div class="form-group">
                     <label>Email (Tùy chọn)</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-envelope"></i>
@@ -541,19 +534,13 @@
                     <label>Mã Admin (nếu có)</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-key"></i>
-                        <input type="text" id="register-admin-code" placeholder="Nhập mã bí mật nếu có">
+                        <input type="text" id="register-admin-code" placeholder="Nhập mã bí mật">
                     </div>
                 </div>
                 <button type="submit" class="btn-submit" id="register-btn">
                     <i class="fa-solid fa-user-plus"></i> Đăng Ký Tài Khoản
                 </button>
             </form>
-
-            <div id="register-info"
-                style="margin-top: 1rem; padding: 0.8rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.85rem; color: #94a3b8;">
-                <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i>
-                Lưu ý: Chỉ đăng ký thành công nếu <b>SĐT</b> và <b>CCCD</b> khớp với danh sách cư dân.
-            </div>
 
             <div class="auth-footer">
                 <p>Hệ thống quản lý cư dân chung cư</p>
@@ -677,25 +664,24 @@
             }
         }
 
-        // Handle Register (Xác thực qua SĐT + CCCD)
+        // Handle Register
         async function handleRegister(e) {
             e.preventDefault();
             const btn = document.getElementById('register-btn');
             const name = document.getElementById('register-name').value;
             const phone = document.getElementById('register-phone').value;
-            const cccd = document.getElementById('register-cccd').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const adminCode = document.getElementById('register-admin-code').value;
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Đang xác thực cư dân...';
+            btn.innerHTML = '<span class="spinner"></span> Đang tạo tài khoản...';
 
             try {
                 const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, phone, email, password, cccd, adminCode })
+                    body: JSON.stringify({ name, phone, email, password, adminCode })
                 });
 
                 const data = await response.json();
@@ -704,13 +690,13 @@
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('currentUser', JSON.stringify(data.user));
 
-                    showMessage('Đăng ký thành công! Chào mừng cư dân mới.', 'success');
+                    showMessage('Đăng ký thành công! Chào mừng bạn.', 'success');
                     setTimeout(() => {
                         const redirectUrl = data.user.role === 'admin' ? 'index.html' : 'user_view.html';
                         window.location.href = redirectUrl;
-                    }, 1500);
+                    }, 1000);
                 } else {
-                    showMessage(data.message || 'Xác thực không thành công. Hãy đảm bảo bạn nhập đúng SĐT & CCCD đã báo Admin.', 'error');
+                    showMessage(data.message || 'Đăng ký không thành công.', 'error');
                 }
             } catch (error) {
                 showMessage('Lỗi kết nối đến server.', 'error');
