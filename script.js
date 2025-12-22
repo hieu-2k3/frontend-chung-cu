@@ -1,6 +1,27 @@
 // ==================== AUTH CHECK ====================
 const API_URL = 'https://apartment-api-3jnu.onrender.com/api';
 
+// Wakeup logic for Render
+(function checkServer() {
+    const loadingScreen = document.getElementById('wakeup-loading');
+    if (!loadingScreen) return;
+
+    const baseUrl = API_URL.replace('/api', '').replace(/\/$/, '');
+
+    const tryFetch = async () => {
+        try {
+            // Cố gắng fetch endpoint ping hoặc root
+            await fetch(baseUrl, { mode: 'no-cors' });
+            loadingScreen.classList.add('hidden');
+            console.log('Server is awake!');
+        } catch (e) {
+            console.log('Server is sleeping, retrying...');
+            setTimeout(tryFetch, 2000);
+        }
+    };
+    tryFetch();
+})();
+
 // State Management
 let buildingState = [];
 let currentRoomId = null;

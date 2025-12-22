@@ -235,6 +235,24 @@
 </head>
 
 <body>
+    <!-- Server Wakeup Loading Screen -->
+    <div id="wakeup-loading" class="wakeup-overlay">
+        <div class="wakeup-content">
+            <div class="wakeup-spinner-wrapper">
+                <div class="wakeup-spinner"></div>
+                <i class="fa-solid fa-building-circle-check wakeup-icon"></i>
+            </div>
+            <h2 class="wakeup-title">Đang Khởi Động Máy Chủ</h2>
+            <p class="wakeup-text">
+                Hệ thống đang được đánh thức. Vì sử dụng máy chủ miễn phí, quá trình này có thể mất từ 30-60 giây. Vui
+                lòng giữ nguyên màn hình.
+            </p>
+            <div class="wakeup-progress">
+                <div class="wakeup-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Market Post Modal -->
     <div id="market-modal" class="modal hidden">
         <div class="modal-content glass-panel" style="max-width: 450px;">
@@ -549,6 +567,28 @@
     <script>
         // --- Shared Auth Logic ---
         const API_URL = 'https://apartment-api-3jnu.onrender.com/api';
+
+        // Wakeup logic for Render
+        (function checkServer() {
+            const loadingScreen = document.getElementById('wakeup-loading');
+            if (!loadingScreen) return;
+
+            const baseUrl = API_URL.replace('/api', '').replace(/\/$/, '');
+
+            const tryFetch = async () => {
+                try {
+                    // Cố gắng fetch endpoint ping hoặc root
+                    await fetch(baseUrl, { mode: 'no-cors' });
+                    loadingScreen.classList.add('hidden');
+                    console.log('Server is awake!');
+                } catch (e) {
+                    console.log('Server is sleeping, retrying...');
+                    setTimeout(tryFetch, 2000);
+                }
+            };
+            tryFetch();
+        })();
+
         window.userHasRoom = false; // Global flag
 
 

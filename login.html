@@ -256,10 +256,169 @@
             color: var(--accent-blue);
             text-decoration: none;
         }
+
+        /* Wakeup Loading styles */
+        @keyframes spin-fancy {
+            0% {
+                transform: rotate(0deg);
+                border-top-color: var(--accent-blue);
+            }
+
+            25% {
+                border-top-color: var(--accent-purple);
+            }
+
+            50% {
+                transform: rotate(180deg);
+                border-top-color: var(--accent-green);
+            }
+
+            75% {
+                border-top-color: var(--accent-blue);
+            }
+
+            100% {
+                transform: rotate(360deg);
+                border-top-color: var(--accent-blue);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes progress-slide {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+
+        .wakeup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.2) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.2) 0px, transparent 50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .wakeup-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .wakeup-content {
+            text-align: center;
+            max-width: 400px;
+            padding: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .wakeup-spinner-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 2rem;
+        }
+
+        .wakeup-spinner {
+            width: 100%;
+            height: 100%;
+            border: 4px solid rgba(255, 255, 255, 0.05);
+            border-top: 4px solid var(--accent-blue);
+            border-radius: 50%;
+            animation: spin-fancy 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+        }
+
+        .wakeup-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: var(--text-primary);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .wakeup-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #fff, var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .wakeup-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .wakeup-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 1.5rem auto 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .wakeup-progress-bar {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+            animation: progress-slide 2s infinite;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Server Wakeup Loading Screen -->
+    <div id="wakeup-loading" class="wakeup-overlay">
+        <div class="wakeup-content">
+            <div class="wakeup-spinner-wrapper">
+                <div class="wakeup-spinner"></div>
+                <i class="fa-solid fa-building-circle-check wakeup-icon"></i>
+            </div>
+            <h2 class="wakeup-title">Đang Khởi Động Máy Chủ</h2>
+            <p class="wakeup-text">
+                Hệ thống đang được đánh thức. Vì sử dụng máy chủ miễn phí, quá trình này có thể mất từ 30-60 giây. Vui
+                lòng giữ nguyên màn hình.
+            </p>
+            <div class="wakeup-progress">
+                <div class="wakeup-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
@@ -351,6 +510,25 @@
 
     <script>
         const API_URL = 'https://apartment-api-3jnu.onrender.com/api';
+
+        // Wakeup logic
+        (function checkServer() {
+            const loadingScreen = document.getElementById('wakeup-loading');
+            const baseUrl = API_URL.replace('/api', '').replace(/\/$/, '');
+
+            const tryFetch = async () => {
+                try {
+                    // Cố gắng fetch endpoint ping hoặc root
+                    const res = await fetch(baseUrl, { mode: 'no-cors' });
+                    loadingScreen.classList.add('hidden');
+                    console.log('Server is awake!');
+                } catch (e) {
+                    console.log('Server is sleeping, retrying...');
+                    setTimeout(tryFetch, 2000);
+                }
+            };
+            tryFetch();
+        })();
 
         // Check if already logged in
         window.onload = () => {
