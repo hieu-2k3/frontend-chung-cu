@@ -672,7 +672,8 @@
                 return;
             }
 
-            const userPhone = currentUser.phone.trim();
+            // Clean phone for robust matching (remove spaces, dots, dashes)
+            const userPhone = currentUser.phone.toString().replace(/[\s\.\-\(\)]/g, '');
 
             try {
                 console.log("Fetching directory from:", `${API_URL}/apartments`);
@@ -688,7 +689,10 @@
 
                 const myRoom = buildingState.find(item =>
                     item.residents && Array.isArray(item.residents) &&
-                    item.residents.some(r => r.phoneLogin && r.phoneLogin.trim() === userPhone)
+                    item.residents.some(r => {
+                        const rPhone = (r.phoneLogin || r.phone || "").toString().replace(/[\s\.\-\(\)]/g, '');
+                        return rPhone === userPhone;
+                    })
                 );
 
                 if (!myRoom) {
@@ -731,7 +735,9 @@
                             <div class="onboarding-content">
                                 <h2>Chào mừng, ${(currentUser.name || 'Cư dân mới')}!</h2>
                                 <p>
-                                    Tài khoản <b>${userPhone}</b> của bạn đã sẵn sàng. Hiện tại Ban quản lý đang kiểm tra thông tin để gán bạn vào đúng số phòng của mình.
+                                    Tài khoản <b>${currentUser.phone}</b> của bạn đã sẵn sàng. 
+                                    <br><br>
+                                    <span style="color: #fbbf24; font-weight: bold;">LƯU Ý:</span> Để xem được đầy đủ thông tin phòng, hóa đơn và chợ cư dân, bạn cần liên hệ Ban quản lý để được gán vào đúng số căn hộ của mình.
                                 </p>
                                 <div class="onboarding-features">
                                     <div class="feature-tag"><i class="fa-solid fa-bullhorn"></i> Tin tức</div>
@@ -740,7 +746,7 @@
                                     <div class="feature-tag"><i class="fa-solid fa-wrench"></i> Bảo trì</div>
                                 </div>
                                 <p style="font-size: 0.8rem; margin-top: 1.5rem; color: #64748b; margin-bottom: 0;">
-                                    <i class="fa-solid fa-info-circle"></i> Cần hỗ trợ ngay? Hãy liên hệ văn phòng tầng 1.
+                                    <i class="fa-solid fa-info-circle"></i> Đã được gán phòng mà vẫn thấy thông báo này? Vui lòng kiểm tra lại SĐT đã báo với Admin.
                                 </p>
                             </div>
                         </div>
