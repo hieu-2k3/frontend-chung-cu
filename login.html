@@ -10,10 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -506,67 +502,58 @@
             <!-- Register Form -->
             <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
                 <div class="form-group">
+                    <label>Họ và Tên</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="register-name" placeholder="Nguyễn Văn A" required>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label>Số điện thoại</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-phone"></i>
                         <input type="tel" id="register-phone" placeholder="SĐT đã báo Admin" required>
                     </div>
                 </div>
-
-                <!-- OTP Section -->
-                <div id="otp-container" style="display: none;">
-                    <div class="form-group">
-                        <label>Mã xác thực OTP</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-shield-halved"></i>
-                            <input type="text" id="register-otp" placeholder="Nhập mã 6 số">
-                        </div>
+                <div class="form-group">
+                    <label>Số CCCD (Xác minh cư dân)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-id-card"></i>
+                        <input type="text" id="register-cccd" placeholder="Nhập để xác minh chính chủ" required>
                     </div>
                 </div>
-
-                <button type="button" class="btn-submit" id="send-otp-btn" onclick="sendOTP()"
-                    style="background: var(--accent-green); margin-bottom: 1rem;">
-                    <i class="fa-solid fa-paper-plane"></i> Gửi mã OTP
+                <div class="form-group">
+                    <label>Email (Tùy chọn)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="register-email" placeholder="email@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="register-password" placeholder="Tối thiểu 6 ký tự" minlength="6"
+                            required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mã Admin (nếu có)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="text" id="register-admin-code" placeholder="Nhập mã bí mật nếu có">
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" id="register-btn">
+                    <i class="fa-solid fa-user-plus"></i> Đăng Ký Tài Khoản
                 </button>
-
-                <div id="register-details" style="display: none;">
-                    <!-- Registration fields remain same -->
-                    <div class="form-group">
-                        <label>Họ và Tên</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-user"></i>
-                            <input type="text" id="register-name" placeholder="Nguyễn Văn A">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Email (Tùy chọn)</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-envelope"></i>
-                            <input type="email" id="register-email" placeholder="email@example.com">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Mật khẩu</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-lock"></i>
-                            <input type="password" id="register-password" placeholder="Tối thiểu 6 ký tự" minlength="6">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Mã Admin (nếu có)</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-key"></i>
-                            <input type="text" id="register-admin-code" placeholder="Nhập mã bí mật">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-submit" id="register-btn">
-                        <i class="fa-solid fa-user-plus"></i> Đăng Ký Tài Khoản
-                    </button>
-                </div>
             </form>
 
-            <!-- Firebase ReCAPTCHA Container -->
-            <div id="recaptcha-container" style="margin-top: 1rem;"></div>
+            <div id="register-info"
+                style="margin-top: 1rem; padding: 0.8rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.85rem; color: #94a3b8;">
+                <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i>
+                Lưu ý: Chỉ đăng ký thành công nếu <b>SĐT</b> và <b>CCCD</b> khớp với danh sách cư dân.
+            </div>
 
             <div class="auth-footer">
                 <p>Hệ thống quản lý cư dân chung cư</p>
@@ -577,39 +564,27 @@
     <script>
         const API_URL = 'https://apartment-api-3jnu.onrender.com/api';
 
-        // --- FIREBASE CONFIGURATION ---
-        // Thông tin dự án quanlychungcu-11f5a
-        const firebaseConfig = {
-            apiKey: "AIzaSyBXNfpKKScpH_nl-J8W8XareFEVV4yZQh4",
-            authDomain: "quanlychungcu-11f5a.firebaseapp.com",
-            projectId: "quanlychungcu-11f5a",
-            storageBucket: "quanlychungcu-11f5a.firebasestorage.app",
-            messagingSenderId: "950542395712",
-            appId: "1:950542395712:web:df9213de1c3eaa1853b2a5",
-            measurementId: "G-ZVC5HPWQHQ"
-        };
+        // Wakeup logic
+        (function checkServer() {
+            const loadingScreen = document.getElementById('wakeup-loading');
+            const baseUrl = API_URL.replace('/api', '').replace(/\/$/, '');
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        auth.languageCode = 'vi'; // Đặt ngôn ngữ tin nhắn là tiếng Việt
+            const tryFetch = async () => {
+                try {
+                    // Cố gắng fetch endpoint ping hoặc root
+                    const res = await fetch(baseUrl, { mode: 'no-cors' });
+                    loadingScreen.classList.add('hidden');
+                    console.log('Server is awake!');
+                } catch (e) {
+                    console.log('Server is sleeping, retrying...');
+                    setTimeout(tryFetch, 2000);
+                }
+            };
+            tryFetch();
+        })();
 
-        let confirmationResult = null; // Biến lưu kết quả xác thực của Firebase
-
-        // Window onload for ReCAPTCHA
+        // Check if already logged in
         window.onload = () => {
-            try {
-                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                    'size': 'invisible',
-                    'callback': (response) => {
-                        console.log('reCAPTCHA solved');
-                    }
-                }, auth);
-            } catch (err) {
-                console.error("reCAPTCHA Init Error:", err);
-            }
-
-            // ... (rest of window.onload login logic)
             const token = localStorage.getItem('authToken');
             if (token) {
                 // Verify token
@@ -628,22 +603,6 @@
                         localStorage.removeItem('currentUser');
                     });
             }
-
-            // Expose Server Wakeup Check
-            (function checkServer() {
-                const loadingScreen = document.getElementById('wakeup-loading');
-                const baseUrl = API_URL.replace('/api', '').replace(/\/$/, '');
-                if (!loadingScreen) return;
-                const tryFetch = async () => {
-                    try {
-                        await fetch(baseUrl, { mode: 'no-cors' });
-                        loadingScreen.classList.add('hidden');
-                    } catch (e) {
-                        setTimeout(tryFetch, 2000);
-                    }
-                };
-                tryFetch();
-            })();
         };
 
         // Switch between login and register tabs
@@ -718,36 +677,25 @@
             }
         }
 
-        // Handle Register
+        // Handle Register (Xác thực qua SĐT + CCCD)
         async function handleRegister(e) {
             e.preventDefault();
             const btn = document.getElementById('register-btn');
             const name = document.getElementById('register-name').value;
             const phone = document.getElementById('register-phone').value;
-            const otp = document.getElementById('register-otp').value;
+            const cccd = document.getElementById('register-cccd').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const adminCode = document.getElementById('register-admin-code').value;
 
-            if (!otp) return showMessage('Vui lòng nhập mã xác thực OTP', 'error');
-
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Đang tạo tài khoản...';
+            btn.innerHTML = '<span class="spinner"></span> Đang xác thực cư dân...';
 
             try {
-                // 1. Xác thực OTP với Firebase
-                if (!confirmationResult) {
-                    throw new Error('Vui lòng nhận mã OTP trước');
-                }
-
-                const result = await confirmationResult.confirm(otp);
-                console.log('Firebase user verified:', result.user);
-
-                // 2. Chụp thông tin và Đăng ký trên Server của bạn
                 const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, phone, email, password, adminCode })
+                    body: JSON.stringify({ name, phone, email, password, cccd, adminCode })
                 });
 
                 const data = await response.json();
@@ -756,21 +704,19 @@
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('currentUser', JSON.stringify(data.user));
 
-                    const role = data.user.role;
-                    const redirectUrl = role === 'admin' ? 'index.html' : 'user_view.html';
-
-                    showMessage('Đăng ký thành công! Đang chuyển hướng...', 'success');
+                    showMessage('Đăng ký thành công! Chào mừng cư dân mới.', 'success');
                     setTimeout(() => {
+                        const redirectUrl = data.user.role === 'admin' ? 'index.html' : 'user_view.html';
                         window.location.href = redirectUrl;
-                    }, 1000);
+                    }, 1500);
                 } else {
-                    showMessage(data.message || 'Đăng ký thất bại', 'error');
+                    showMessage(data.message || 'Xác thực không thành công. Hãy đảm bảo bạn nhập đúng SĐT & CCCD đã báo Admin.', 'error');
                 }
             } catch (error) {
-                showMessage('Không thể kết nối đến server. Vui lòng kiểm tra server đã chạy chưa.', 'error');
+                showMessage('Lỗi kết nối đến server.', 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Đăng Ký';
+                btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Đăng Ký Tài Khoản';
             }
         }
 
@@ -810,50 +756,7 @@
             }
         }
 
-        // OTP Functions (Using Firebase)
-        async function sendOTP() {
-            let phone = document.getElementById('register-phone').value.trim();
-            const btn = document.getElementById('send-otp-btn');
-
-            if (!phone || phone.length < 10) {
-                return showMessage('Vui lòng nhập số điện thoại hợp lệ', 'error');
-            }
-
-            // Convert to international format for Firebase (VN: +84)
-            if (phone.startsWith('0')) {
-                phone = '+84' + phone.substring(1);
-            } else if (!phone.startsWith('+')) {
-                phone = '+84' + phone;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang kết nối Firebase...';
-
-            try {
-                const appVerifier = window.recaptchaVerifier;
-                confirmationResult = await auth.signInWithPhoneNumber(phone, appVerifier);
-
-                showMessage('Mã xác thực đã được gửi về điện thoại của bạn!', 'success');
-
-                document.getElementById('otp-container').style.display = 'block';
-                document.getElementById('register-details').style.display = 'block';
-                btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Gửi lại mã';
-                btn.style.background = '#64748b';
-            } catch (err) {
-                console.error("Firebase Auth Error:", err);
-                showMessage('Lỗi gửi OTP: ' + (err.message || 'Kiểm tra cấu hình Firebase'), 'error');
-                // Nếu lỗi reCAPTCHA, reset nó
-                if (window.recaptchaVerifier) {
-                    window.recaptchaVerifier.render().then(widgetId => {
-                        grecaptcha.reset(widgetId);
-                    });
-                }
-            } finally {
-                btn.disabled = false;
-            }
-        }
     </script>
-    <div id="recaptcha-container"></div>
 </body>
 
 </html>
