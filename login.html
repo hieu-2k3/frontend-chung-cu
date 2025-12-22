@@ -500,19 +500,36 @@
             </form>
 
             <!-- Register Form -->
-            <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Số điện thoại</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" id="register-phone" placeholder="SĐT đã báo Admin" required>
+                </div>
+            </div>
+
+            <!-- OTP Section -->
+            <div id="otp-container" style="display: none;">
+                <div class="form-group">
+                    <label>Mã xác thực OTP</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <input type="text" id="register-otp" placeholder="Nhập mã 6 số">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn-submit" id="send-otp-btn" onclick="sendOTP()"
+                style="background: var(--accent-green); margin-bottom: 1rem;">
+                <i class="fa-solid fa-paper-plane"></i> Gửi mã OTP
+            </button>
+
+            <div id="register-details" style="display: none;">
                 <div class="form-group">
                     <label>Họ và Tên</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text" id="register-name" placeholder="Nguyễn Văn A" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Số điện thoại</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-phone"></i>
-                        <input type="tel" id="register-phone" placeholder="Cư dân nhập đúng SĐT đã báo Admin" required>
+                        <input type="text" id="register-name" placeholder="Nguyễn Văn A">
                     </div>
                 </div>
                 <div class="form-group">
@@ -526,8 +543,7 @@
                     <label>Mật khẩu</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="register-password" placeholder="Tối thiểu 6 ký tự" minlength="6"
-                            required>
+                        <input type="password" id="register-password" placeholder="Tối thiểu 6 ký tự" minlength="6">
                     </div>
                 </div>
                 <div class="form-group">
@@ -538,8 +554,9 @@
                     </div>
                 </div>
                 <button type="submit" class="btn-submit" id="register-btn">
-                    <i class="fa-solid fa-user-plus"></i> Đăng Ký
+                    <i class="fa-solid fa-user-plus"></i> Đăng Ký Tài Khoản
                 </button>
+            </div>
             </form>
 
             <div class="auth-footer">
@@ -669,19 +686,34 @@
             e.preventDefault();
             const btn = document.getElementById('register-btn');
             const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
             const phone = document.getElementById('register-phone').value;
+            const otp = document.getElementById('register-otp').value;
+            const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const adminCode = document.getElementById('register-admin-code').value;
 
+            if (!otp) return showMessage('Vui lòng nhập mã xác thực OTP', 'error');
+
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Đang đăng ký...';
+            btn.innerHTML = '<span class="spinner"></span> Đang tạo tài khoản...';
 
             try {
+                // 1. Xác thực OTP trước
+                const verifyRes = await fetch(`${API_URL}/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, code: otp })
+                });
+                const verifyData = await verifyRes.json();
+                if (!verifyData.success) {
+                    throw new Error(verifyData.message || 'Mã xác thực không hợp lệ');
+                }
+
+                // 2. Nếu OTP OK -> Đăng ký
                 const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, phone, password, adminCode })
+                    body: JSON.stringify({ name, phone, email, password, adminCode })
                 });
 
                 const data = await response.json();
@@ -741,6 +773,47 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Đặt Lại Mật Khẩu';
+            }
+        }
+
+        // OTP Functions
+        async function sendOTP() {
+            const phone = document.getElementById('register-phone').value;
+            const btn = document.getElementById('send-otp-btn');
+
+            if (!phone || phone.length < 10) {
+                return showMessage('Vui lòng nhập số điện thoại hợp lệ', 'error');
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang gửi...';
+
+            try {
+                const res = await fetch(`${API_URL}/send-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    // Demo: Hiển thị mã luôn để test nếu có debugCode
+                    if (data.debugCode) {
+                        setTimeout(() => alert(`[DEMO] Mã OTP của bạn là: ${data.debugCode}`), 500);
+                    }
+
+                    document.getElementById('otp-container').style.display = 'block';
+                    document.getElementById('register-details').style.display = 'block';
+                    btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Gửi lại mã';
+                    btn.style.background = '#64748b'; // Gray for resend
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (err) {
+                showMessage('Lỗi kết nối khi gửi OTP', 'error');
+            } finally {
+                btn.disabled = false;
             }
         }
     </script>
