@@ -1317,23 +1317,32 @@
                 // Upload media if exists
                 const mediaFile = document.getElementById('maint-media').files[0];
                 if (mediaFile) {
+                    // Check file size (max 10MB for images, 50MB for videos)
+                    const maxSize = mediaFile.type.startsWith('video/') ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+                    if (mediaFile.size > maxSize) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                        return alert(`File quá lớn! Tối đa ${mediaFile.type.startsWith('video/') ? '50MB' : '10MB'}`);
+                    }
+
                     submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-beat"></i> Đang tải ảnh/video...';
 
-                    const formData = new FormData();
-                    formData.append('image', mediaFile);
+                    try {
+                        // Convert to base64 for simple storage (works for smaller files)
+                        const reader = new FileReader();
+                        const base64Promise = new Promise((resolve, reject) => {
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(mediaFile);
+                        });
 
-                    // Using ImgBB free API (supports both images and videos)
-                    const uploadRes = await fetch('https://api.imgbb.com/1/upload?key=d134cc0bc6f5da69abc5ec7e9f2d1f59', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const uploadData = await uploadRes.json();
-
-                    if (uploadData.success) {
-                        mediaUrl = uploadData.data.url;
+                        mediaUrl = await base64Promise;
                         mediaType = mediaFile.type.startsWith('video/') ? 'video' : 'image';
-                    } else {
-                        throw new Error('Upload failed: ' + (uploadData.error?.message || 'Unknown error'));
+                    } catch (uploadError) {
+                        console.error('Upload error:', uploadError);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                        return alert('Lỗi khi tải file: ' + uploadError.message);
                     }
                 }
 
