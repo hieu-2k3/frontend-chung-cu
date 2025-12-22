@@ -1777,6 +1777,17 @@ function viewMaintDetail(id) {
             <span class="detail-label">Nội dung chi tiết</span>
             <div class="detail-value" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; white-space: pre-wrap;">${req.description}</div>
         </div>
+        ${req.mediaUrl ? `
+            <div class="detail-row" style="border-bottom: none; margin-top: 1rem;">
+                <span class="detail-label"><i class="fa-solid fa-image"></i> Ảnh/Video đính kèm</span>
+                <div class="detail-value" style="margin-top: 0.5rem; text-align: center;">
+                    ${req.mediaType === 'image'
+                ? `<img src="${req.mediaUrl}" style="max-width: 100%; border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="Ảnh sự cố">`
+                : `<video src="${req.mediaUrl}" controls style="max-width: 100%; border-radius: 0.5rem;"></video>`
+            }
+                </div>
+            </div>
+        ` : ''}
     `;
 
     maintDetailModal.classList.remove('hidden');
