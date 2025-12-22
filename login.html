@@ -455,9 +455,48 @@
                         <input type="password" id="login-password" placeholder="••••••••" required>
                     </div>
                 </div>
+                <div style="text-align: right; margin-bottom: 1.5rem;">
+                    <a href="#" onclick="switchTab('forgot')"
+                        style="color: var(--text-secondary); font-size: 0.85rem; text-decoration: none; transition: var(--transition);">Quên
+                        mật khẩu?</a>
+                </div>
                 <button type="submit" class="btn-submit" id="login-btn">
                     <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập
                 </button>
+            </form>
+
+            <!-- Forgot Password Form -->
+            <form id="forgot-form" class="auth-form" onsubmit="handleResetPassword(event)">
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="tel" id="reset-phone" placeholder="0901234567" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Số CCCD (Để xác minh)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-id-card"></i>
+                        <input type="text" id="reset-cccd" placeholder="Nhập số CCCD đã báo Admin" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu mới</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" id="reset-new-password" placeholder="Tối thiểu 6 ký tự" minlength="6"
+                            required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" id="reset-btn">
+                    <i class="fa-solid fa-rotate"></i> Đặt Lại Mật Khẩu
+                </button>
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="#" onclick="switchTab('login')"
+                        style="color: var(--accent-blue); font-size: 0.9rem; text-decoration: none;">Quay lại đăng
+                        nhập</a>
+                </div>
             </form>
 
             <!-- Register Form -->
@@ -568,9 +607,12 @@
             if (tab === 'login') {
                 tabs[0].classList.add('active');
                 document.getElementById('login-form').classList.add('active');
-            } else {
+            } else if (tab === 'register') {
                 tabs[1].classList.add('active');
                 document.getElementById('register-form').classList.add('active');
+            } else if (tab === 'forgot') {
+                // No active tab for forgot password
+                document.getElementById('forgot-form').classList.add('active');
             }
         }
 
@@ -663,6 +705,42 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Đăng Ký';
+            }
+        }
+
+        // Handle Reset Password
+        async function handleResetPassword(e) {
+            e.preventDefault();
+            const btn = document.getElementById('reset-btn');
+            const phone = document.getElementById('reset-phone').value;
+            const cccd = document.getElementById('reset-cccd').value;
+            const newPassword = document.getElementById('reset-new-password').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+
+            try {
+                const response = await fetch(`${API_URL}/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, cccd, newPassword })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.', 'success');
+                    setTimeout(() => {
+                        switchTab('login');
+                    }, 2000);
+                } else {
+                    showMessage(data.message || 'Xác thực thất bại', 'error');
+                }
+            } catch (error) {
+                showMessage('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Đặt Lại Mật Khẩu';
             }
         }
     </script>
