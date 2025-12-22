@@ -621,8 +621,9 @@
                 const userData = data.user;
                 document.getElementById('user-name').textContent = userData.name || 'Cư dân';
 
-                // Continue loading data after verification
-                loadDirectory();
+                // CRITICAL: Wait for room assignment status before loading other restricted data
+                await loadDirectory();
+
                 loadUserAnnouncements();
                 loadMarketItems();
                 loadInvoices();
@@ -685,19 +686,24 @@
                 if (!result.success) throw new Error(result.message);
 
                 const buildingState = result.data || [];
-                console.log("Loaded building data:", buildingState.length, "items");
+                console.log("Loaded building data:", buildingState.length, "rooms");
+                console.log("Searching for resident with phone:", userPhone);
 
                 const myRoom = buildingState.find(item =>
                     item.residents && Array.isArray(item.residents) &&
                     item.residents.some(r => {
                         const rPhone = (r.phoneLogin || r.phone || "").toString().replace(/[\s\.\-\(\)]/g, '');
-                        return rPhone === userPhone;
+                        if (rPhone === userPhone) {
+                            console.log(`✅ Match found in room ${item.id} (Resident: ${r.name})`);
+                            return true;
+                        }
+                        return false;
                     })
                 );
 
                 if (!myRoom) {
                     window.userHasRoom = false;
-                    console.warn("No room found for phone:", userPhone);
+                    console.warn("❌ No room found for phone:", userPhone);
                 } else {
                     window.userHasRoom = true;
                 }
