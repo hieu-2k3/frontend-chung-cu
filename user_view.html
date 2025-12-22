@@ -502,17 +502,17 @@
                     </div>
                     <div class="form-group" style="margin-bottom: 1.25rem;">
                         <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
-                            <i class="fa-solid fa-image"></i> Ảnh/Video minh họa (Tùy chọn)
+                            <i class="fa-solid fa-image"></i> Ảnh minh họa (Tùy chọn)
                         </label>
                         <div
                             style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; border: 1px dashed rgba(255,255,255,0.2);">
-                            <input type="file" id="maint-media" accept="image/*,video/*"
+                            <input type="file" id="maint-media" accept="image/*"
                                 style="width: 100%; padding: 0.5rem; background: transparent; color: white; border: none;">
                             <div id="maint-media-preview"
                                 style="margin-top: 0.75rem; display: none; text-align: center;"></div>
                             <small style="display: block; margin-top: 0.5rem; color: #94a3b8; font-size: 0.75rem;">
-                                <i class="fa-solid fa-info-circle"></i> Chụp ảnh/quay video sự cố để Admin xử lý nhanh
-                                hơn
+                                <i class="fa-solid fa-info-circle"></i> Chụp ảnh sự cố để Admin xử lý nhanh hơn (Tối đa
+                                2MB)
                             </small>
                         </div>
                     </div>
@@ -1271,11 +1271,7 @@
                 const reader = new FileReader();
                 reader.onload = function (event) {
                     preview.style.display = 'block';
-                    if (file.type.startsWith('image/')) {
-                        preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">`;
-                    } else if (file.type.startsWith('video/')) {
-                        preview.innerHTML = `<video src="${event.target.result}" controls style="max-width: 100%; max-height: 200px; border-radius: 0.5rem;"></video>`;
-                    }
+                    preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">`;
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -1317,18 +1313,18 @@
                 // Upload media if exists
                 const mediaFile = document.getElementById('maint-media').files[0];
                 if (mediaFile) {
-                    // Check file size (max 2MB for images, 5MB for videos to fit in MongoDB 16MB limit)
-                    const maxSize = mediaFile.type.startsWith('video/') ? 5 * 1024 * 1024 : 2 * 1024 * 1024;
+                    // Check file size (max 2MB for images)
+                    const maxSize = 2 * 1024 * 1024; // 2MB
                     if (mediaFile.size > maxSize) {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnText;
-                        return alert(`File quá lớn! Tối đa ${mediaFile.type.startsWith('video/') ? '5MB' : '2MB'}\n\nGợi ý: Nén video/ảnh trước khi gửi`);
+                        return alert('Ảnh quá lớn! Tối đa 2MB\n\nGợi ý: Nén ảnh trước khi gửi');
                     }
 
-                    submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-beat"></i> Đang tải ảnh/video...';
+                    submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-beat"></i> Đang tải ảnh...';
 
                     try {
-                        // Convert to base64 for simple storage (works for smaller files)
+                        // Convert to base64
                         const reader = new FileReader();
                         const base64Promise = new Promise((resolve, reject) => {
                             reader.onload = () => resolve(reader.result);
@@ -1337,12 +1333,12 @@
                         });
 
                         mediaUrl = await base64Promise;
-                        mediaType = mediaFile.type.startsWith('video/') ? 'video' : 'image';
+                        mediaType = 'image';
                     } catch (uploadError) {
                         console.error('Upload error:', uploadError);
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnText;
-                        return alert('Lỗi khi tải file: ' + uploadError.message);
+                        return alert('Lỗi khi tải ảnh: ' + uploadError.message);
                     }
                 }
 
