@@ -500,6 +500,22 @@
                         <textarea id="maint-description" rows="4" placeholder="Mô tả cụ thể vấn đề của bạn..." required
                             style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); font-family: inherit; resize: vertical;"></textarea>
                     </div>
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                            <i class="fa-solid fa-image"></i> Ảnh/Video minh họa (Tùy chọn)
+                        </label>
+                        <div
+                            style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; border: 1px dashed rgba(255,255,255,0.2);">
+                            <input type="file" id="maint-media" accept="image/*,video/*"
+                                style="width: 100%; padding: 0.5rem; background: transparent; color: white; border: none;">
+                            <div id="maint-media-preview"
+                                style="margin-top: 0.75rem; display: none; text-align: center;"></div>
+                            <small style="display: block; margin-top: 0.5rem; color: #94a3b8; font-size: 0.75rem;">
+                                <i class="fa-solid fa-info-circle"></i> Chụp ảnh/quay video sự cố để Admin xử lý nhanh
+                                hơn
+                            </small>
+                        </div>
+                    </div>
                     <div style="margin-top: 2rem;">
                         <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;">
                             <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu
@@ -1099,6 +1115,17 @@
                     <span class="detail-label">Nội dung chi tiết</span>
                     <div class="detail-value" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; white-space: pre-wrap;">${req.description}</div>
                 </div>
+                ${req.mediaUrl ? `
+                    <div class="detail-row" style="border-bottom: none; margin-top: 1rem;">
+                        <span class="detail-label"><i class="fa-solid fa-image"></i> Ảnh/Video đính kèm</span>
+                        <div class="detail-value" style="margin-top: 0.5rem; text-align: center;">
+                            ${req.mediaType === 'image'
+                        ? `<img src="${req.mediaUrl}" style="max-width: 100%; border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="Ảnh sự cố">`
+                        : `<video src="${req.mediaUrl}" controls style="max-width: 100%; border-radius: 0.5rem;"></video>`
+                    }
+                        </div>
+                    </div>
+                ` : ''}
             `;
 
             document.getElementById('maint-detail-modal').classList.remove('hidden');
@@ -1235,33 +1262,94 @@
             document.getElementById('maintenance-modal').classList.add('hidden');
         };
 
+        // Media preview for maintenance
+        document.getElementById('maint-media').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('maint-media-preview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    preview.style.display = 'block';
+                    if (file.type.startsWith('image/')) {
+                        preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">`;
+                    } else if (file.type.startsWith('video/')) {
+                        preview.innerHTML = `<video src="${event.target.result}" controls style="max-width: 100%; max-height: 200px; border-radius: 0.5rem;"></video>`;
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+                preview.innerHTML = '';
+            }
+        });
+
         document.getElementById('maintenance-form').onsubmit = async (e) => {
             e.preventDefault();
             const token = localStorage.getItem('authToken');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
 
-            // Get resident's room info first to fill the request
-            const apartmentsRes = await fetch(`${API_URL}/apartments`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const apartmentsData = await apartmentsRes.json();
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            const myRoom = apartmentsData.data.find(room =>
-                room.residents && room.residents.some(r => r.phoneLogin === currentUser.phone)
-            );
-
-            if (!myRoom) return alert("Không tìm thấy thông tin phòng của bạn!");
-
-            const body = {
-                roomId: myRoom.id,
-                roomName: `Phòng ${myRoom.id}`,
-                senderName: currentUser.name,
-                type: document.getElementById('maint-type').value,
-                priority: document.getElementById('maint-priority').value,
-                title: document.getElementById('maint-title').value.trim(),
-                description: document.getElementById('maint-description').value.trim()
-            };
+            // Disable button during upload
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
 
             try {
+                // Get resident's room info first to fill the request
+                const apartmentsRes = await fetch(`${API_URL}/apartments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const apartmentsData = await apartmentsRes.json();
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const myRoom = apartmentsData.data.find(room =>
+                    room.residents && room.residents.some(r => r.phoneLogin === currentUser.phone)
+                );
+
+                if (!myRoom) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    return alert("Không tìm thấy thông tin phòng của bạn!");
+                }
+
+                let mediaUrl = '';
+                let mediaType = '';
+
+                // Upload media if exists
+                const mediaFile = document.getElementById('maint-media').files[0];
+                if (mediaFile) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-beat"></i> Đang tải ảnh/video...';
+
+                    const formData = new FormData();
+                    formData.append('file', mediaFile);
+                    formData.append('upload_preset', 'ml_default');
+
+                    const cloudinaryUrl = mediaFile.type.startsWith('video/')
+                        ? 'https://api.cloudinary.com/v1_1/dqg2paq0d/video/upload'
+                        : 'https://api.cloudinary.com/v1_1/dqg2paq0d/image/upload';
+
+                    const uploadRes = await fetch(cloudinaryUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const uploadData = await uploadRes.json();
+                    mediaUrl = uploadData.secure_url;
+                    mediaType = mediaFile.type.startsWith('video/') ? 'video' : 'image';
+                }
+
+                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane fa-beat"></i> Đang gửi yêu cầu...';
+
+                const body = {
+                    roomId: myRoom.id,
+                    roomName: `Phòng ${myRoom.id}`,
+                    senderName: currentUser.name,
+                    type: document.getElementById('maint-type').value,
+                    priority: document.getElementById('maint-priority').value,
+                    title: document.getElementById('maint-title').value.trim(),
+                    description: document.getElementById('maint-description').value.trim(),
+                    mediaUrl: mediaUrl,
+                    mediaType: mediaType
+                };
+
                 const res = await fetch(`${API_URL}/maintenance`, {
                     method: 'POST',
                     headers: {
@@ -1275,10 +1363,18 @@
                     alert("✅ Yêu cầu của bạn đã được gửi!");
                     document.getElementById('maintenance-modal').classList.add('hidden');
                     document.getElementById('maintenance-form').reset();
+                    document.getElementById('maint-media-preview').style.display = 'none';
+                    document.getElementById('maint-media-preview').innerHTML = '';
                     loadMaintenance();
+                } else {
+                    alert(result.message || "Lỗi gửi yêu cầu");
                 }
             } catch (err) {
-                alert("Lỗi gửi yêu cầu");
+                console.error(err);
+                alert("Lỗi gửi yêu cầu: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             }
         };
 
