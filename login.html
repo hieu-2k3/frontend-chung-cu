@@ -598,12 +598,16 @@
 
         // Window onload for ReCAPTCHA
         window.onload = () => {
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                'size': 'invisible', // Dùng loại ẩn để trải nghiệm mượt hơn
-                'callback': (response) => {
-                    // reCAPTCHA solved
-                }
-            });
+            try {
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        console.log('reCAPTCHA solved');
+                    }
+                }, auth);
+            } catch (err) {
+                console.error("reCAPTCHA Init Error:", err);
+            }
 
             // ... (rest of window.onload login logic)
             const token = localStorage.getItem('authToken');
