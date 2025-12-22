@@ -593,8 +593,8 @@
         window.userHasRoom = false; // Global flag
 
 
-        // Check Auth
-        (function checkAuth() {
+        // Check Auth and Session
+        async function checkAuth() {
             const token = localStorage.getItem('authToken');
             const user = localStorage.getItem('currentUser');
 
@@ -603,13 +603,40 @@
                 return;
             }
 
-            // Check Role - Protect User Route (Optional: Redirect admin to dashboard?)
-            // For now, allow admin to see this view if they want via direct link, 
-            // but normally logic directs them to index.html
+            try {
+                // Verify user still exists in DB
+                const response = await fetch(`${API_URL}/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
 
-            const userData = JSON.parse(user);
-            document.getElementById('user-name').textContent = userData.name || 'Cư dân';
-        })();
+                if (!data.success) {
+                    // User was deleted or token expired
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('currentUser');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userData = data.user;
+                document.getElementById('user-name').textContent = userData.name || 'Cư dân';
+
+                // Continue loading data after verification
+                loadDirectory();
+                loadUserAnnouncements();
+                loadMarketItems();
+                loadInvoices();
+                loadMaintenance();
+                loadUserContract();
+
+            } catch (error) {
+                console.error("Auth check failed:", error);
+                // If it's a network error, maybe don't redirect yet
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', checkAuth);
 
         // Handle Logout
         function handleLogout() {
@@ -1755,20 +1782,6 @@
             if (e.target === modal) modal.classList.add('hidden');
         });
 
-        // Init
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Priority 1: Check room assignment first
-            await loadDirectory();
-
-            // Priority 2: Load features that might depend on room assignment
-            loadInvoices();
-            loadMaintenance();
-
-            // Independent features
-            loadUserAnnouncements();
-            loadUserContract();
-            loadMarketItems();
-        });
 
     </script>
 </body>
