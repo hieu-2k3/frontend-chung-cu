@@ -1733,6 +1733,11 @@ function viewMaintDetail(id) {
     const req = maintenanceRequests.find(r => r._id === id);
     if (!req) return;
 
+    // Debug: Log the request data to see if mediaUrl exists
+    console.log('📋 Maintenance Request Data:', req);
+    console.log('🖼️ Media URL:', req.mediaUrl);
+    console.log('🎬 Media Type:', req.mediaType);
+
     let statusText = '';
     switch (req.status) {
         case 'pending': statusText = 'Chờ xử lý'; break;
