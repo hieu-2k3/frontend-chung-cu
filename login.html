@@ -500,63 +500,64 @@
             </form>
 
             <!-- Register Form -->
-            <div class="form-group">
-                <label>Số điện thoại</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-phone"></i>
-                    <input type="tel" id="register-phone" placeholder="SĐT đã báo Admin" required>
+            <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="tel" id="register-phone" placeholder="SĐT đã báo Admin" required>
+                    </div>
                 </div>
-            </div>
 
-            <!-- OTP Section -->
-            <div id="otp-container" style="display: none;">
-                <div class="form-group">
-                    <label>Mã xác thực OTP</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <input type="text" id="register-otp" placeholder="Nhập mã 6 số">
+                <!-- OTP Section -->
+                <div id="otp-container" style="display: none;">
+                    <div class="form-group">
+                        <label>Mã xác thực OTP</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <input type="text" id="register-otp" placeholder="Nhập mã 6 số">
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <button type="button" class="btn-submit" id="send-otp-btn" onclick="sendOTP()"
-                style="background: var(--accent-green); margin-bottom: 1rem;">
-                <i class="fa-solid fa-paper-plane"></i> Gửi mã OTP
-            </button>
-
-            <div id="register-details" style="display: none;">
-                <div class="form-group">
-                    <label>Họ và Tên</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-user"></i>
-                        <input type="text" id="register-name" placeholder="Nguyễn Văn A">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Email (Tùy chọn)</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-envelope"></i>
-                        <input type="email" id="register-email" placeholder="email@example.com">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Mật khẩu</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="register-password" placeholder="Tối thiểu 6 ký tự" minlength="6">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Mã Admin (nếu có)</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-key"></i>
-                        <input type="text" id="register-admin-code" placeholder="Nhập mã bí mật">
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit" id="register-btn">
-                    <i class="fa-solid fa-user-plus"></i> Đăng Ký Tài Khoản
+                <button type="button" class="btn-submit" id="send-otp-btn" onclick="sendOTP()"
+                    style="background: var(--accent-green); margin-bottom: 1rem;">
+                    <i class="fa-solid fa-paper-plane"></i> Gửi mã OTP
                 </button>
-            </div>
+
+                <div id="register-details" style="display: none;">
+                    <div class="form-group">
+                        <label>Họ và Tên</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" id="register-name" placeholder="Nguyễn Văn A">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email (Tùy chọn)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" id="register-email" placeholder="email@example.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="register-password" placeholder="Tối thiểu 6 ký tự" minlength="6">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Mã Admin (nếu có)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-key"></i>
+                            <input type="text" id="register-admin-code" placeholder="Nhập mã bí mật">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit" id="register-btn">
+                        <i class="fa-solid fa-user-plus"></i> Đăng Ký Tài Khoản
+                    </button>
+                </div>
             </form>
 
             <div class="auth-footer">
