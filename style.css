@@ -2232,4 +2232,29 @@ select:focus {
     color: var(--text-secondary);
     pointer-events: none;
     font-size: 0.9rem;
+}/* Priority Dots */
+.priority-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.priority-dot.high {
+    background: var(--accent-red);
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+}
+
+.priority-dot.medium {
+    background: #fbbf24;
+}
+
+.priority-dot.low {
+    background: #94a3b8;
+}
+
+.status-badge.in-progress {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--accent-blue);
 }

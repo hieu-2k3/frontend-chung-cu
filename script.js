@@ -1735,63 +1735,128 @@ async function loadMaintenanceRequests() {
     }
 }
 
+// Event Listeners for Maintenance Filters
+const maintSearchInput = document.getElementById('maint-search-room');
+const maintTypeFilter = document.getElementById('maint-filter-type');
+const maintStatusFilter = document.getElementById('maint-filter-status');
+
+if (maintSearchInput) maintSearchInput.oninput = renderMaintenanceList;
+if (maintTypeFilter) maintTypeFilter.onchange = renderMaintenanceList;
+if (maintStatusFilter) maintStatusFilter.onchange = renderMaintenanceList;
+
 function renderMaintenanceList() {
     const listBody = document.getElementById('maintenance-list-body');
-    if (!listBody) {
-        console.warn("Element 'maintenance-list-body' not found");
-        return;
+    if (!listBody) return;
+
+    // Filter Logic
+    let displayItems = maintenanceRequests;
+
+    // 1. Search by Room
+    const searchVal = maintSearchInput ? maintSearchInput.value.trim().toLowerCase() : '';
+    if (searchVal) {
+        displayItems = displayItems.filter(req => req.roomName.toLowerCase().includes(searchVal));
     }
 
-    console.log("Rendering maintenance list with", maintenanceRequests.length, "items");
+    // 2. Filter Type
+    const typeVal = maintTypeFilter ? maintTypeFilter.value : 'all';
+    if (typeVal !== 'all') {
+        displayItems = displayItems.filter(req => req.type === typeVal);
+    }
+
+    // 3. Filter Status
+    const statusVal = maintStatusFilter ? maintStatusFilter.value : 'all';
+    if (statusVal !== 'all') {
+        displayItems = displayItems.filter(req => req.status === statusVal);
+    }
+
+    // Sort: Pending -> In Progress -> Completed, then by Date Desc
+    const statusOrder = { 'pending': 1, 'in-progress': 2, 'completed': 3, 'cancelled': 4 };
+    displayItems.sort((a, b) => {
+        if (statusOrder[a.status] !== statusOrder[b.status]) {
+            return statusOrder[a.status] - statusOrder[b.status];
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
     listBody.innerHTML = '';
 
-    if (!maintenanceRequests || maintenanceRequests.length === 0) {
-        listBody.innerHTML = '<tr><td colspan="7" class="empty-message">Chưa có yêu cầu hoặc phản hồi nào</td></tr>';
+    if (!displayItems || displayItems.length === 0) {
+        listBody.innerHTML = '<tr><td colspan="7" class="empty-message">Không có yêu cầu nào phù hợp</td></tr>';
         return;
     }
 
-    maintenanceRequests.forEach(req => {
+    displayItems.forEach(req => {
         const tr = document.createElement('tr');
         tr.className = 'maint-row-clickable';
         tr.onclick = () => viewMaintDetail(req._id);
 
         const typeIcon = req.type === 'maintenance' ? 'fa-wrench' : 'fa-comment-alt';
+        const typeColor = req.type === 'maintenance' ? 'color: var(--accent-blue);' : 'color: var(--accent-purple);';
         const typeLabel = req.type === 'maintenance' ? 'Bảo trì' : 'Góp ý';
 
         const date = new Date(req.createdAt).toLocaleDateString('vi-VN');
 
         let statusText = '';
+        let statusClass = '';
         switch (req.status) {
-            case 'pending': statusText = 'Chờ xử lý'; break;
-            case 'in-progress': statusText = 'Đang sửa'; break;
-            case 'completed': statusText = 'Hoàn thành'; break;
-            case 'cancelled': statusText = 'Đã hủy'; break;
+            case 'pending':
+                statusText = 'Chờ xử lý';
+                statusClass = 'pending'; // yellow
+                break;
+            case 'in-progress':
+                statusText = 'Đang sửa';
+                statusClass = 'paid'; // green-ish in CSS usually, but let's check styles. Re-using 'paid' might be confusing but index.html uses specific classes. 
+                // Let's use custom class if needed or inline. 
+                // Actually 'status-badge.in-progress' needs CSS. Assuming standard names.
+                statusClass = 'in-progress';
+                break;
+            case 'completed':
+                statusText = 'Hoàn thành';
+                statusClass = 'paid'; // green
+                break;
+            case 'cancelled':
+                statusText = 'Đã hủy';
+                statusClass = 'expired'; // red
+                break;
         }
 
         // Action buttons (Admin only for status changes)
         let actions = '';
         if (isAdmin) {
             actions = `
-                <div class="action-btns">
-                    ${req.status === 'pending' ? `<button class="btn-icon success" onclick="event.stopPropagation(); updateMaintStatus('${req._id}', 'in-progress')" title="Bắt đầu sửa"><i class="fa-solid fa-play"></i></button>` : ''}
-                    ${['pending', 'in-progress'].includes(req.status) ? `<button class="btn-icon success" onclick="event.stopPropagation(); updateMaintStatus('${req._id}', 'completed')" title="Xong"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                    <button class="btn-icon danger" onclick="event.stopPropagation(); deleteMaintRequest('${req._id}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                <div class="action-btns" style="display: flex; gap: 6px;">
+                    ${req.status === 'pending' ?
+                    `<button class="btn-icon" style="background: var(--accent-blue);" onclick="event.stopPropagation(); updateMaintStatus('${req._id}', 'in-progress')" title="Bắt đầu sửa"><i class="fa-solid fa-play"></i></button>` : ''}
+                    
+                    ${req.status === 'in-progress' ?
+                    `<button class="btn-icon success" onclick="event.stopPropagation(); updateMaintStatus('${req._id}', 'completed')" title="Hoàn thành"><i class="fa-solid fa-check"></i></button>` : ''}
+                    
+                    ${req.status === 'completed' ?
+                    `<span style="color: var(--accent-green); font-size: 1.2rem;"><i class="fa-solid fa-circle-check"></i></span>` :
+                    `<button class="btn-icon danger" onclick="event.stopPropagation(); deleteMaintRequest('${req._id}')" title="Xóa"><i class="fa-solid fa-trash"></i></button>`
+                }
                 </div>
             `;
         } else if (req.status === 'pending') {
             actions = `<button class="btn-icon danger" onclick="event.stopPropagation(); updateMaintStatus('${req._id}', 'cancelled')" title="Hủy yêu cầu"><i class="fa-solid fa-ban"></i></button>`;
         }
 
+        const priorityBadge = req.priority === 'high' ?
+            `<span class="priority-dot high" title="Khẩn cấp"></span>` :
+            (req.priority === 'medium' ? `<span class="priority-dot medium" title="Trung bình"></span>` : `<span class="priority-dot low" title="Thấp"></span>`);
+
         tr.innerHTML = `
             <td>${date}</td>
-            <td><strong>${req.roomName}</strong></td>
+            <td><span class="room-badge">P.${req.roomName}</span></td>
             <td>
-                <div class="text-truncate" style="font-weight: 500; max-width: 200px;">${req.title}</div>
-                <small class="text-truncate" style="color: var(--text-secondary); max-width: 250px;">${req.description}</small>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    ${priorityBadge}
+                    <div class="text-truncate" style="font-weight: 500; max-width: 200px;">${req.title}</div>
+                </div>
+                <!-- <small class="text-truncate" style="color: var(--text-secondary); max-width: 250px;">${req.description}</small> -->
             </td>
-            <td><i class="fa-solid ${typeIcon} maint-type-icon"></i> ${typeLabel}</td>
-            <td><span class="priority-badge priority-${req.priority}">${req.priority === 'high' ? 'Khẩn cấp' : (req.priority === 'medium' ? 'Thường' : 'Thấp')}</span></td>
-            <td><span class="status-badge ${req.status}">${statusText}</span></td>
+            <td><i class="fa-solid ${typeIcon}" style="${typeColor}"></i> ${typeLabel}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
             <td>${actions}</td>
         `;
         listBody.appendChild(tr);
