@@ -2362,17 +2362,20 @@ function renderAdminMarketTable() {
     listBody.innerHTML = items.map(item => `
         <tr class="maint-row-clickable" onclick="viewMarketDetail('${item._id}')">
             <td>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <img src="${item.image}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
-                    <div class="text-truncate" style="font-weight: 500; max-width: 180px;">${item.title}</div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="${item.image}" class="market-thumb" loading="lazy">
+                    <div>
+                        <div class="market-item-title text-truncate" style="max-width: 200px;">${item.title}</div>
+                        <!-- <div class="market-item-sub text-truncate" style="max-width: 200px;">${item.description || 'Không có mô tả'}</div> -->
+                    </div>
                 </div>
             </td>
-            <td><strong style="color: #10b981;">${item.price.toLocaleString()} đ</strong></td>
+            <td><div class="market-price">${item.price.toLocaleString()} đ</div></td>
             <td>
-                <span class="room-badge" style="font-size: 0.8rem;">P.${item.roomName || 'N/A'}</span>
+                <span class="room-badge" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">P.${item.roomName || 'N/A'}</span>
             </td>
-            <td>${item.contactPhone}</td>
-            <td>${new Date(item.createdAt).toLocaleDateString('vi-VN')}</td>
+            <td style="color: var(--text-secondary);">${item.contactPhone}</td>
+            <td style="color: var(--text-secondary); font-size: 0.9rem;">${new Date(item.createdAt).toLocaleDateString('vi-VN')}</td>
             <td>
                 <button class="btn-icon danger" onclick="event.stopPropagation(); deleteMarketItem('${item._id}')" title="Xóa tin">
                     <i class="fa-solid fa-trash"></i>

@@ -2257,4 +2257,46 @@ select:focus {
 .status-badge.in-progress {
     background: rgba(59, 130, 246, 0.2);
     color: var(--accent-blue);
+}/* Admin Market Table Enhancements */
+#admin-market-list tr td {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s ease;
+}
+
+#admin-market-list tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+#admin-market-list tr:last-child td {
+    border-bottom: none;
+}
+
+.market-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.market-item-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.market-item-sub {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.market-price {
+    font-weight: 700;
+    color: #10b981;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
 }
