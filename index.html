@@ -26,7 +26,43 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* Hide everything else initially */
+        body>*:not(#wakeup-loading) {
+            display: none !important;
+        }
     </style>
+    <script>
+        // CRITICAL: Immediate Redirect Logic
+        (function () {
+            const token = localStorage.getItem('authToken');
+            const userStr = localStorage.getItem('currentUser');
+
+            // 1. If not logged in -> Go to Login
+            if (!token || !userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // 2. If logged in as User -> Go to User View IMMEDIATELY
+            try {
+                const user = JSON.parse(userStr);
+                if (user.role !== 'admin') {
+                    window.location.replace('user_view.html'); // Use replace to avoid history back issue
+                } else {
+                    // Admin: Allow rendering, so remove the 'display: none' style when DOM is ready
+                    window.addEventListener('DOMContentLoaded', () => {
+                        const style = document.createElement('style');
+                        style.innerHTML = 'body > *:not(#wakeup-loading) { display: block !important; display: flex !important; } .app-container { display: block !important; }';
+                        document.head.appendChild(style);
+                    });
+                }
+            } catch (e) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        })();
+    </script>
 </head>
 
 <body>
