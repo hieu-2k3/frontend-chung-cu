@@ -2163,7 +2163,9 @@ select:focus {
 .premium-form input[readonly] {
     opacity: 0.6;
     cursor: not-allowed;
-}/* Filter & Search Styles */
+}
+
+/* Filter & Search Styles */
 .filter-wrapper,
 .search-wrapper {
     position: relative;
@@ -2232,7 +2234,9 @@ select:focus {
     color: var(--text-secondary);
     pointer-events: none;
     font-size: 0.9rem;
-}/* Priority Dots */
+}
+
+/* Priority Dots */
 .priority-dot {
     width: 8px;
     height: 8px;
@@ -2257,7 +2261,9 @@ select:focus {
 .status-badge.in-progress {
     background: rgba(59, 130, 246, 0.2);
     color: var(--accent-blue);
-}/* Admin Market Table Enhancements */
+}
+
+/* Admin Market Table Enhancements */
 #admin-market-list tr td {
     vertical-align: middle;
     padding: 1rem 0.75rem;
@@ -2300,6 +2306,7 @@ select:focus {
     font-size: 1rem;
     letter-spacing: 0.5px;
 }
+
 /* --- New Admin Market Grid Styles --- */
 .market-grid-admin {
     display: grid;
@@ -2311,12 +2318,14 @@ select:focus {
 .market-card-admin {
     position: relative;
     overflow: hidden;
-    padding: 0 !important; /* Override glass-panel padding */
+    padding: 0 !important;
+    /* Override glass-panel padding */
     transition: var(--transition);
     border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     background: rgba(30, 41, 59, 0.6);
+    border-radius: 1.5rem;
 }
 
 .market-card-admin:hover {
@@ -2374,6 +2383,7 @@ select:focus {
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -2420,7 +2430,7 @@ select:focus {
     cursor: pointer;
     transition: all 0.2s ease;
     backdrop-filter: blur(4px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn-admin-market-action.delete {
