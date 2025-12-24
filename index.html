@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css">
     <!-- Using FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    <style id="anti-fouc-style">
         /* Critical CSS to prevent FOUC */
         .wakeup-overlay {
             position: fixed;
@@ -50,11 +50,10 @@
                 if (user.role !== 'admin') {
                     window.location.replace('user_view.html'); // Use replace to avoid history back issue
                 } else {
-                    // Admin: Allow rendering, so remove the 'display: none' style when DOM is ready
+                    // Admin: Remove the hiding style when DOM is ready to restore original layout
                     window.addEventListener('DOMContentLoaded', () => {
-                        const style = document.createElement('style');
-                        style.innerHTML = 'body > *:not(#wakeup-loading) { display: block !important; display: flex !important; } .app-container { display: block !important; }';
-                        document.head.appendChild(style);
+                        const style = document.getElementById('anti-fouc-style');
+                        if (style) style.remove();
                     });
                 }
             } catch (e) {
