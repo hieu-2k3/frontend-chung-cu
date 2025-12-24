@@ -2272,7 +2272,7 @@ if (marketSortSelect) marketSortSelect.onchange = () => renderAdminMarketTable()
 
 async function loadMarketItems() {
     const userList = document.getElementById('user-market-list');
-    const adminList = document.getElementById('admin-market-list');
+    const adminList = document.getElementById('admin-market-grid-view');
     if (!userList && !adminList) return;
 
     try {
@@ -2330,7 +2330,7 @@ function renderUserMarketGrid(items) {
 }
 
 function renderAdminMarketTable() {
-    const listBody = document.getElementById('admin-market-list');
+    const listBody = document.getElementById('admin-market-grid-view');
     if (!listBody) return;
 
     let items = window.allMarketItems || [];
@@ -2355,33 +2355,34 @@ function renderAdminMarketTable() {
     });
 
     if (items.length === 0) {
-        listBody.innerHTML = '<tr><td colspan="6" class="empty-message">Không tìm thấy tin đăng nào.</td></tr>';
+        listBody.innerHTML = '<div class="empty-message" style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">Không tìm thấy tin đăng nào phù hợp.</div>';
         return;
     }
 
     listBody.innerHTML = items.map(item => `
-        <tr class="maint-row-clickable" onclick="viewMarketDetail('${item._id}')">
-            <td>
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <img src="${item.image}" class="market-thumb" loading="lazy">
-                    <div>
-                        <div class="market-item-title text-truncate" style="max-width: 200px;">${item.title}</div>
-                        <!-- <div class="market-item-sub text-truncate" style="max-width: 200px;">${item.description || 'Không có mô tả'}</div> -->
+        <div class="market-card-admin" onclick="viewMarketDetail('${item._id}')" style="cursor: pointer;">
+            <div class="market-card-image-wrapper">
+                <img src="${item.image}" loading="lazy" alt="${item.title}">
+                <div class="market-card-date"><i class="fa-regular fa-clock"></i> ${new Date(item.createdAt).toLocaleDateString('vi-VN')}</div>
+                <div class="price-badge">${item.price.toLocaleString()} đ</div>
+                <div class="market-card-overlay-actions">
+                    <button class="btn-admin-market-action delete" onclick="event.stopPropagation(); deleteMarketItem('${item._id}')" title="Xóa tin">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="market-card-body">
+                <div class="market-title" title="${item.title}">${item.title}</div>
+                <div class="market-info-grid">
+                    <div class="market-info-item">
+                        <i class="fa-solid fa-house-user"></i> <span>P.${item.roomName || 'N/A'}</span>
+                    </div>
+                    <div class="market-info-item" style="justify-content: flex-end;">
+                        <i class="fa-solid fa-phone"></i> <span>${item.contactPhone}</span>
                     </div>
                 </div>
-            </td>
-            <td><div class="market-price">${item.price.toLocaleString()} đ</div></td>
-            <td>
-                <span class="room-badge" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">P.${item.roomName || 'N/A'}</span>
-            </td>
-            <td style="color: var(--text-secondary);">${item.contactPhone}</td>
-            <td style="color: var(--text-secondary); font-size: 0.9rem;">${new Date(item.createdAt).toLocaleDateString('vi-VN')}</td>
-            <td>
-                <button class="btn-icon danger" onclick="event.stopPropagation(); deleteMarketItem('${item._id}')" title="Xóa tin">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </td>
-        </tr>
+            </div>
+        </div>
     `).join('');
 }
 
