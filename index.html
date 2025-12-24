@@ -62,6 +62,7 @@
             }
         })();
     </script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 
 <body>
@@ -1185,6 +1186,117 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="script.js"></script>
     <script src="contracts.js"></script>
+    <div id="chat-widget" class="chat-widget hidden">
+        <div class="chat-header">
+            <h3><i class="fa-regular fa-comments"></i> Cộng Đồng Cư Dân</h3>
+            <span class="close-chat" onclick="toggleChat()">&times;</span>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages -->
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Nhập tin nhắn...">
+            <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <button id="chat-fab" class="chat-fab" onclick="toggleChat()">
+        <i class="fa-solid fa-comments"></i>
+        <div class="notification-dot"></div>
+    </button>
+
+    <script>
+        const CHAT_API_URL = 'https://apartment-api-3jnu.onrender.com/api'; // Chat API URL
+        let socket;
+
+        function initChat() {
+            const token = localStorage.getItem('authToken');
+            const userStr = localStorage.getItem('currentUser');
+            if (!token || !userStr) return;
+            const user = JSON.parse(userStr);
+
+            // Connect to socket
+            socket = io(CHAT_API_URL.replace('/api', ''), {
+                auth: { token }
+            });
+
+            socket.on('connect', () => {
+                console.log('Connected to chat server');
+            });
+
+            socket.on('message', (msg) => {
+                appendMessage(msg, user.id);
+                if (document.getElementById('chat-widget').classList.contains('hidden')) {
+                    document.querySelector('.notification-dot').style.display = 'block';
+                } else {
+                    scrollToBottom();
+                }
+            });
+
+            // Load history
+            fetch(`${CHAT_API_URL}/messages`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const container = document.getElementById('chat-messages');
+                        container.innerHTML = '';
+                        data.data.forEach(msg => appendMessage(msg, user.id));
+                        scrollToBottom();
+                    }
+                });
+        }
+
+        function toggleChat() {
+            const widget = document.getElementById('chat-widget');
+            widget.classList.toggle('hidden');
+            if (!widget.classList.contains('hidden')) {
+                document.querySelector('.notification-dot').style.display = 'none';
+                scrollToBottom();
+            }
+        }
+
+        function appendMessage(msg, currentUserId) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            const isSelf = msg.senderId === currentUserId;
+            div.className = `message ${isSelf ? 'self' : 'other'}`;
+            div.innerHTML = `
+                <span class="message-sender">${isSelf ? '' : msg.senderName}</span>
+                ${msg.content}
+            `;
+            container.appendChild(div);
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chat-messages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const content = input.value.trim();
+            if (!content) return;
+
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            socket.emit('chatMessage', {
+                senderId: user.id,
+                senderName: user.name,
+                content: content
+            });
+            input.value = '';
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Initialize Chat on load if auth is present
+        window.addEventListener('load', () => {
+            const t = localStorage.getItem('authToken');
+            if (t) initChat();
+        });
+    </script>
 </body>
 
 </html>
