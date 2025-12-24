@@ -192,12 +192,53 @@
             <!-- Market Management Section -->
             <div class="glass-panel" style="margin-top: 1.5rem; margin-bottom: 2.5rem;">
                 <div class="section-header" style="margin-bottom: 1rem;">
-                    <h2><i class="fa-solid fa-store"></i> Chợ Cư Dân</h2>
-                    <span style="font-size: 0.9rem; color: #ccc;">(Admin kiểm duyệt)</span>
+                    <h2><i class="fa-solid fa-store"></i> Quản Lý Chợ Cư Dân</h2>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span class="status-badge"
+                            style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-weight: normal;">
+                            <span id="market-total-count">0</span> tin đăng
+                        </span>
+                    </div>
                 </div>
-                <div class="announcement-grid" id="admin-market-list">
-                    <!-- Market items will be loaded here -->
-                    <div style="text-align: center; color: #aaa; padding: 2rem;">Đang tải tin...</div>
+
+                <div
+                    style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; align-items: center; margin-bottom: 1rem;">
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="market-search" class="premium-filter-input"
+                            placeholder="Tìm tên đồ, phòng...">
+                    </div>
+                    <div class="filter-wrapper">
+                        <i class="fa-solid fa-sort filter-icon"></i>
+                        <select id="market-sort" class="premium-filter-select">
+                            <option value="newest">Mới nhất</option>
+                            <option value="oldest">Cũ nhất</option>
+                            <option value="price-asc">Giá tăng dần</option>
+                            <option value="price-desc">Giá giảm dần</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Giá bán</th>
+                                <th>Người đăng</th>
+                                <th>Liên hệ</th>
+                                <th>Ngày đăng</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-market-list">
+                            <!-- Market items will be loaded here as table rows -->
+                            <tr>
+                                <td colspan="6" class="empty-message">Đang tải tin...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

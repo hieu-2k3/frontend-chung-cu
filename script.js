@@ -2263,12 +2263,16 @@ window.deleteAnnouncement = async (id) => {
 
 let currentMarketMedia = ''; // Base64 storage
 
+// Event Listeners for Market Filters (Admin)
+const marketSearchInput = document.getElementById('market-search');
+const marketSortSelect = document.getElementById('market-sort');
+
+if (marketSearchInput) marketSearchInput.oninput = () => renderAdminMarketTable();
+if (marketSortSelect) marketSortSelect.onchange = () => renderAdminMarketTable();
+
 async function loadMarketItems() {
-    // Determine context: Admin or User
     const userList = document.getElementById('user-market-list');
     const adminList = document.getElementById('admin-market-list');
-
-    // If neither exists, we might be on a page that doesn't use this, but usually script.js is shared.
     if (!userList && !adminList) return;
 
     try {
@@ -2279,54 +2283,103 @@ async function loadMarketItems() {
         const result = await res.json();
 
         if (result.success) {
-            const items = result.data;
-            const currentUserId = parseJwt(token).id;
-            const role = parseJwt(token).role;
+            window.allMarketItems = result.data;
+            const countEl = document.getElementById('market-total-count');
+            if (countEl) countEl.textContent = result.data.length;
 
-            const renderCard = (item) => {
-                const isOwner = item.createdBy === currentUserId;
-                const isAdmin = role === 'admin';
-                const canDelete = isOwner || isAdmin;
-
-                const deleteBtn = canDelete ? `
-                    <button onclick="event.stopPropagation(); deleteMarketItem('${item._id}')" style="position: absolute; top: 10px; right: 10px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                ` : '';
-
-                return `
-                    <div class="glass-panel market-card market-card-small market-card-clickable" 
-                         style="position: relative;" 
-                         onclick="viewMarketDetail(\`${item._id}\`)">
-                        ${deleteBtn}
-                        <img src="${item.image}" alt="Item">
-                        <h4 class="text-truncate" style="margin: 0.5rem 0 0.2rem 0; color: white; font-size: 1rem;">${item.title}</h4>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                            <span class="price-tag" style="font-size: 0.8rem;">${item.price.toLocaleString()} đ</span>
-                        </div>
-                        <div class="text-truncate" style="font-size: 0.8rem; color: #94a3b8;">
-                            <i class="fa-solid fa-phone" style="font-size: 0.7rem;"></i> ${item.contactPhone}
-                        </div>
-                        <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.3rem;">
-                            <i class="fa-solid fa-house-user" style="font-size: 0.7rem;"></i> ${item.roomName || 'N/A'}
-                        </div>
-                    </div>
-                `;
-            };
-
-            // Inject detailed data into window for easy access
-            window.allMarketItems = items;
-
-            if (userList) {
-                userList.innerHTML = items.length ? items.map(renderCard).join('') : '<div style="text-align: center; color: #aaa; width: 100%; padding: 2rem;">Chưa có tin nào.</div>';
-            }
-            if (adminList) {
-                adminList.innerHTML = items.length ? items.map(renderCard).join('') : '<div style="text-align: center; color: #aaa; width: 100%; padding: 2rem;">Chưa có tin nào.</div>';
-            }
+            if (userList) renderUserMarketGrid(result.data);
+            if (adminList) renderAdminMarketTable();
         }
     } catch (err) {
         console.error("Lỗi tải chợ:", err);
     }
+}
+
+function renderUserMarketGrid(items) {
+    const userList = document.getElementById('user-market-list');
+    if (!userList) return;
+
+    // User view logic (Keep cards)
+    const token = localStorage.getItem('authToken');
+    const currentUserId = token ? JSON.parse(atob(token.split('.')[1])).id : null;
+
+    userList.innerHTML = items.length ? items.map(item => {
+        const isOwner = item.createdBy === currentUserId;
+        const deleteBtn = isOwner ? `
+            <button onclick="event.stopPropagation(); deleteMarketItem('${item._id}')" class="btn-delete-market-item">
+                <i class="fa-solid fa-trash"></i>
+            </button>` : '';
+
+        return `
+            <div class="glass-panel market-card market-card-small market-card-clickable" onclick="viewMarketDetail('${item._id}')">
+                ${deleteBtn}
+                <img src="${item.image}" alt="Item">
+                <h4 class="text-truncate" style="margin: 0.5rem 0 0.2rem 0; color: white; font-size: 1rem;">${item.title}</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <span class="price-tag">${item.price.toLocaleString()} đ</span>
+                </div>
+                <div class="text-truncate" style="font-size: 0.8rem; color: #94a3b8;">
+                    <i class="fa-solid fa-phone" style="font-size: 0.7rem;"></i> ${item.contactPhone}
+                </div>
+                <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.3rem;">
+                    <i class="fa-solid fa-house-user" style="font-size: 0.7rem;"></i> ${item.roomName || 'N/A'}
+                </div>
+            </div>
+        `;
+    }).join('') : '<div class="empty-message-box">Chưa có tin nào.</div>';
+}
+
+function renderAdminMarketTable() {
+    const listBody = document.getElementById('admin-market-list');
+    if (!listBody) return;
+
+    let items = window.allMarketItems || [];
+
+    // Filter
+    const searchVal = marketSearchInput ? marketSearchInput.value.trim().toLowerCase() : '';
+    if (searchVal) {
+        items = items.filter(i =>
+            i.title.toLowerCase().includes(searchVal) ||
+            (i.roomName && i.roomName.toLowerCase().includes(searchVal))
+        );
+    }
+
+    // Sort
+    const sortVal = marketSortSelect ? marketSortSelect.value : 'newest';
+    items.sort((a, b) => {
+        if (sortVal === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+        if (sortVal === 'oldest') return new Date(a.createdAt) - new Date(b.createdAt);
+        if (sortVal === 'price-asc') return a.price - b.price;
+        if (sortVal === 'price-desc') return b.price - a.price;
+        return 0;
+    });
+
+    if (items.length === 0) {
+        listBody.innerHTML = '<tr><td colspan="6" class="empty-message">Không tìm thấy tin đăng nào.</td></tr>';
+        return;
+    }
+
+    listBody.innerHTML = items.map(item => `
+        <tr class="maint-row-clickable" onclick="viewMarketDetail('${item._id}')">
+            <td>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <img src="${item.image}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="text-truncate" style="font-weight: 500; max-width: 180px;">${item.title}</div>
+                </div>
+            </td>
+            <td><strong style="color: #10b981;">${item.price.toLocaleString()} đ</strong></td>
+            <td>
+                <span class="room-badge" style="font-size: 0.8rem;">P.${item.roomName || 'N/A'}</span>
+            </td>
+            <td>${item.contactPhone}</td>
+            <td>${new Date(item.createdAt).toLocaleDateString('vi-VN')}</td>
+            <td>
+                <button class="btn-icon danger" onclick="event.stopPropagation(); deleteMarketItem('${item._id}')" title="Xóa tin">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
 }
 
 function viewMarketDetail(id) {
