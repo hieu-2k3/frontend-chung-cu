@@ -583,9 +583,16 @@
     </div>
 
     <!-- Chat Widget -->
+    <!-- Chat Widget -->
     <div id="chat-widget" class="chat-widget hidden">
         <div class="chat-header">
-            <h3><i class="fa-regular fa-comments"></i> Cộng Đồng Cư Dân</h3>
+            <div id="chat-header-content" style="display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+                <h3 id="chat-title"><i class="fa-regular fa-comments"></i> Cộng Đồng Cư Dân</h3>
+            </div>
+            <button id="chat-back-btn" class="hidden" onclick="returnToCommunity()"
+                style="background:none; border:none; color:white; cursor:pointer; margin-right: 0.5rem;">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
             <span class="close-chat" onclick="toggleChat()">&times;</span>
         </div>
         <div class="chat-messages" id="chat-messages">
@@ -630,6 +637,8 @@
 
         // --- CHAT LOGIC ---
         let socket;
+        let currentChatPartnerId = null; // null = Community Chat
+
         function initChat() {
             const token = localStorage.getItem('authToken');
             const userStr = localStorage.getItem('currentUser');
@@ -645,17 +654,50 @@
                 console.log('Connected to chat server');
             });
 
+            // Handle Community & Private Messages
             socket.on('message', (msg) => {
-                appendMessage(msg, user.id);
-                if (document.getElementById('chat-widget').classList.contains('hidden')) {
-                    document.querySelector('.notification-dot').style.display = 'block';
-                } else {
-                    scrollToBottom();
+                // Community Message
+                if (!currentChatPartnerId) {
+                    appendMessage(msg, user.id);
+                    ifChatClosedNotify();
                 }
             });
 
-            // Load history
-            fetch(`${API_URL}/messages`, {
+            socket.on('private_message', (msg) => {
+                // Private Message
+                // If I'm chatting with this person OR I sent it (echo)
+                if (currentChatPartnerId && (msg.senderId === currentChatPartnerId || msg.receiverId === currentChatPartnerId)) {
+                    appendMessage(msg, user.id);
+                    ifChatClosedNotify();
+                } else {
+                    // Notification for private message from others?
+                    // For now just show dot if widget closed
+                    ifChatClosedNotify();
+                }
+            });
+
+            // Load History (Community Default)
+            loadMessages();
+        }
+
+        function ifChatClosedNotify() {
+            if (document.getElementById('chat-widget').classList.contains('hidden')) {
+                document.querySelector('.notification-dot').style.display = 'block';
+            } else {
+                scrollToBottom();
+            }
+        }
+
+        function loadMessages() {
+            const token = localStorage.getItem('authToken');
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            let url = `${API_URL}/messages`;
+
+            if (currentChatPartnerId) {
+                url += `?partnerId=${currentChatPartnerId}`;
+            }
+
+            fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
                 .then(res => res.json())
@@ -678,11 +720,41 @@
             }
         }
 
+        window.openPrivateChat = function (partnerId, partnerName) {
+            currentChatPartnerId = partnerId;
+
+            // Validate self-chat
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (user.id === partnerId) {
+                alert("Bạn không thể chat với chính mình!");
+                currentChatPartnerId = null;
+                return;
+            }
+
+            // Update UI Header
+            document.getElementById('chat-title').innerHTML = `<i class="fa-solid fa-user"></i> ${partnerName}`;
+            document.getElementById('chat-back-btn').classList.remove('hidden');
+
+            // Open Widget & Load
+            const widget = document.getElementById('chat-widget');
+            widget.classList.remove('hidden');
+            document.querySelector('.notification-dot').style.display = 'none';
+            loadMessages();
+        };
+
+        function returnToCommunity() {
+            currentChatPartnerId = null;
+            document.getElementById('chat-title').innerHTML = `<i class="fa-regular fa-comments"></i> Cộng Đồng Cư Dân`;
+            document.getElementById('chat-back-btn').classList.add('hidden');
+            loadMessages();
+        }
+
         function appendMessage(msg, currentUserId) {
             const container = document.getElementById('chat-messages');
             const div = document.createElement('div');
             const isSelf = msg.senderId === currentUserId;
             div.className = `message ${isSelf ? 'self' : 'other'}`;
+            // If private, maybe show lighter color or icon? Keeping simple for now.
             div.innerHTML = `
                 <span class="message-sender">${isSelf ? '' : msg.senderName}</span>
                 ${msg.content}
@@ -701,11 +773,19 @@
             if (!content) return;
 
             const user = JSON.parse(localStorage.getItem('currentUser'));
-            socket.emit('chatMessage', {
+
+            // Payload depends on mode
+            const payload = {
                 senderId: user.id,
                 senderName: user.name,
                 content: content
-            });
+            };
+
+            if (currentChatPartnerId) {
+                payload.receiverId = currentChatPartnerId;
+            }
+
+            socket.emit('chatMessage', payload);
             input.value = '';
         }
 

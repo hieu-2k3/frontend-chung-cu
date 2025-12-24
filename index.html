@@ -1188,7 +1188,13 @@
     <script src="contracts.js"></script>
     <div id="chat-widget" class="chat-widget hidden">
         <div class="chat-header">
-            <h3><i class="fa-regular fa-comments"></i> Cộng Đồng Cư Dân</h3>
+            <div id="chat-header-content" style="display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+                <h3 id="chat-title"><i class="fa-regular fa-comments"></i> Cộng Đồng Cư Dân</h3>
+            </div>
+            <button id="chat-back-btn" class="hidden" onclick="returnToCommunity()"
+                style="background:none; border:none; color:white; cursor:pointer; margin-right: 0.5rem;">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
             <span class="close-chat" onclick="toggleChat()">&times;</span>
         </div>
         <div class="chat-messages" id="chat-messages">
@@ -1207,6 +1213,7 @@
     <script>
         const CHAT_API_URL = 'https://apartment-api-3jnu.onrender.com/api'; // Chat API URL
         let socket;
+        let currentChatPartnerId = null; // null = Community Chat
 
         function initChat() {
             const token = localStorage.getItem('authToken');
@@ -1223,17 +1230,49 @@
                 console.log('Connected to chat server');
             });
 
+            // Handle Community & Private Messages
             socket.on('message', (msg) => {
-                appendMessage(msg, user.id);
-                if (document.getElementById('chat-widget').classList.contains('hidden')) {
-                    document.querySelector('.notification-dot').style.display = 'block';
-                } else {
-                    scrollToBottom();
+                // Community Message
+                if (!currentChatPartnerId) {
+                    appendMessage(msg, user.id);
+                    ifChatClosedNotify();
                 }
             });
 
-            // Load history
-            fetch(`${CHAT_API_URL}/messages`, {
+            socket.on('private_message', (msg) => {
+                // Private Message
+                // If I'm chatting with this person OR I sent it (echo)
+                if (currentChatPartnerId && (msg.senderId === currentChatPartnerId || msg.receiverId === currentChatPartnerId)) {
+                    appendMessage(msg, user.id);
+                    ifChatClosedNotify();
+                } else {
+                    // Notification for private message from others?
+                    ifChatClosedNotify();
+                }
+            });
+
+            // Load History (Community Default)
+            loadMessages();
+        }
+
+        function ifChatClosedNotify() {
+            if (document.getElementById('chat-widget').classList.contains('hidden')) {
+                document.querySelector('.notification-dot').style.display = 'block';
+            } else {
+                scrollToBottom();
+            }
+        }
+
+        function loadMessages() {
+            const token = localStorage.getItem('authToken');
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            let url = `${CHAT_API_URL}/messages`;
+
+            if (currentChatPartnerId) {
+                url += `?partnerId=${currentChatPartnerId}`;
+            }
+
+            fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
                 .then(res => res.json())
@@ -1254,6 +1293,35 @@
                 document.querySelector('.notification-dot').style.display = 'none';
                 scrollToBottom();
             }
+        }
+
+        window.openPrivateChat = function (partnerId, partnerName) {
+            currentChatPartnerId = partnerId;
+
+            // Validate self-chat
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (user.id === partnerId) {
+                alert("Bạn không thể chat với chính mình!");
+                currentChatPartnerId = null;
+                return;
+            }
+
+            // Update UI Header
+            document.getElementById('chat-title').innerHTML = `<i class="fa-solid fa-user"></i> ${partnerName}`;
+            document.getElementById('chat-back-btn').classList.remove('hidden');
+
+            // Open Widget & Load
+            const widget = document.getElementById('chat-widget');
+            widget.classList.remove('hidden');
+            document.querySelector('.notification-dot').style.display = 'none';
+            loadMessages();
+        };
+
+        function returnToCommunity() {
+            currentChatPartnerId = null;
+            document.getElementById('chat-title').innerHTML = `<i class="fa-regular fa-comments"></i> Cộng Đồng Cư Dân`;
+            document.getElementById('chat-back-btn').classList.add('hidden');
+            loadMessages();
         }
 
         function appendMessage(msg, currentUserId) {
@@ -1279,11 +1347,19 @@
             if (!content) return;
 
             const user = JSON.parse(localStorage.getItem('currentUser'));
-            socket.emit('chatMessage', {
+
+            // Payload depends on mode
+            const payload = {
                 senderId: user.id,
                 senderName: user.name,
                 content: content
-            });
+            };
+
+            if (currentChatPartnerId) {
+                payload.receiverId = currentChatPartnerId;
+            }
+
+            socket.emit('chatMessage', payload);
             input.value = '';
         }
 

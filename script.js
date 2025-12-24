@@ -435,15 +435,23 @@ function renderResidentList(residents) {
         return;
     }
 
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
     residents.forEach((resident, index) => {
         const li = document.createElement('li');
         // Chỉ thêm class clickable nếu là admin (để sửa)
         li.className = `resident-item ${isAdmin ? 'clickable' : ''}`;
         const plateInfo = resident.plate ? `<span class="plate-badge"><i class="fa-solid fa-motorcycle"></i> ${resident.plate}</span>` : '';
 
+        const isMe = resident.phoneLogin === currentUser.phone;
+        const chatBtn = (!isMe && resident.phoneLogin) ?
+            `<i class="fa-regular fa-comment-dots clickable" style="color: var(--accent-blue); margin-left: auto;" onclick="if(window.openPrivateChat) window.openPrivateChat('${resident.phoneLogin}', '${resident.name}')" title="Nhắn tin"></i>`
+            : '';
+
         // Show/Hide buttons based on role
         const actionsHtml = isAdmin ? `
             <div class="resident-actions">
+                ${chatBtn}
                 <button class="btn-edit" onclick="event.stopPropagation(); openEditModal(${index})" title="Sửa">
                     <i class="fa-solid fa-pen"></i>
                 </button>
@@ -451,7 +459,11 @@ function renderResidentList(residents) {
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
-        ` : '';
+        ` : `
+            <div class="resident-actions">
+                ${chatBtn}
+            </div>
+        `;
 
         li.innerHTML = `
             <div class="resident-info">
@@ -469,6 +481,11 @@ function renderResidentList(residents) {
         // Click vào cư dân cũng mở modal sửa (chỉ cho admin)
         if (isAdmin) {
             li.onclick = () => openEditModal(index);
+        } else {
+            // If not admin (User View Detail Modal? Actually User View doesn't use this modal usually, but logic shares)
+            // But this specific modal is Admin's Room Detail. Users don't see this modal usually.
+            // If we repurpose this modal for users, we'd add chat here.
+            // But let's stick to adding Chat in the "All Residents" list and "Directory".
         }
 
         residentListEl.appendChild(li);
@@ -1000,11 +1017,24 @@ window.openAllResidentsModal = () => {
     if (all.length === 0) {
         listEl.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">Chưa có cư dân nào.</td></tr>';
     } else {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         all.forEach((res, idx) => {
             const tr = document.createElement('tr');
+            const residentId = res.phoneLogin ? res.phoneLogin : res.id; // Use phone as ID if available, else local ID
+
+            // Check if it's me
+            const isMe = res.phoneLogin === currentUser.phone;
+
+            const chatBtn = (!isMe && res.phoneLogin) ?
+                `<button class="btn-chat-small" onclick="if(window.openPrivateChat) window.openPrivateChat('${res.phoneLogin}', '${res.name}')" title="Nhắn tin riêng"><i class="fa-regular fa-comment-dots"></i></button>`
+                : '';
+
             tr.innerHTML = `
                 <td>${idx + 1}</td>
-                <td><strong>${res.name}</strong></td>
+                <td style="display: flex; align-items: center; gap: 0.5rem;">
+                    <strong>${res.name}</strong>
+                    ${chatBtn}
+                </td>
                 <td><span class="room-badge">P.${res.roomName}</span></td>
                 <td>${res.phoneLogin || '-'}</td>
                 <td>${res.gender}</td>
