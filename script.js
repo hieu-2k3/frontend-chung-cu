@@ -1189,30 +1189,73 @@ if (invoiceFilterSelect) {
     invoiceFilterSelect.onchange = renderInvoices;
 }
 
+// Event Listeners for New Filters
+const invoiceFilterStatus = document.getElementById('invoice-filter-status');
+const invoiceSearchRoom = document.getElementById('invoice-search-room');
+
+if (invoiceFilterStatus) {
+    invoiceFilterStatus.onchange = renderInvoices;
+}
+
+if (invoiceSearchRoom) {
+    invoiceSearchRoom.oninput = renderInvoices;
+}
+
 function renderInvoices() {
     const body = document.getElementById('invoice-list-body');
+    const footer = document.getElementById('invoice-list-footer');
     if (!body) return;
 
     body.innerHTML = '';
+    if (footer) footer.innerHTML = '';
 
     // Filter Logic
     let displayInvoices = invoices;
+
+    // 1. Filter by Month
     if (invoiceFilterSelect && invoiceFilterSelect.value !== 'all') {
         const [m, y] = invoiceFilterSelect.value.split('/');
-        displayInvoices = invoices.filter(inv => inv.month == m && inv.year == y);
+        displayInvoices = displayInvoices.filter(inv => inv.month == m && inv.year == y);
     }
+
+    // 2. Filter by Status
+    const statusFilter = document.getElementById('invoice-filter-status');
+    if (statusFilter && statusFilter.value !== 'all') {
+        displayInvoices = displayInvoices.filter(inv => inv.status === statusFilter.value);
+    }
+
+    // 3. Filter by Room/Name Search
+    const searchInput = document.getElementById('invoice-search-room');
+    if (searchInput && searchInput.value.trim() !== '') {
+        const term = searchInput.value.trim().toLowerCase();
+        displayInvoices = displayInvoices.filter(inv =>
+            inv.roomName.toLowerCase().includes(term) ||
+            (inv.representativeName && inv.representativeName.toLowerCase().includes(term))
+        );
+    }
+
+    // Calculate Totals
+    const totalAmount = displayInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+    const paidAmount = displayInvoices.reduce((sum, inv) => sum + (inv.status === 'paid' ? (inv.totalAmount || 0) : 0), 0);
+    const pendingAmount = totalAmount - paidAmount;
 
     if (displayInvoices.length === 0) {
         body.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-secondary);">Không có hóa đơn nào phù hợp.</td></tr>';
         return;
     }
 
+    // Sort: Pending first, then by Date Desc
+    displayInvoices.sort((a, b) => {
+        if (a.status !== b.status) return a.status === 'pending' ? -1 : 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
     displayInvoices.forEach(inv => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>Tháng ${inv.month}/${inv.year}</td>
             <td><span class="room-badge">P.${inv.roomName}</span></td>
-            <td><strong>${inv.totalAmount.toLocaleString()} đ</strong></td>
+            <td><strong style="color: var(--accent-blue);">${inv.totalAmount.toLocaleString()} đ</strong></td>
             <td>
                 <span class="status-badge ${inv.status}">${inv.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</span>
             </td>
@@ -1238,6 +1281,32 @@ function renderInvoices() {
         `;
         body.appendChild(tr);
     });
+
+    // Render Summary Footer
+    if (footer) {
+        footer.innerHTML = `
+            <tr>
+                <td colspan="2" style="text-align: right; padding-right: 1.5rem; letter-spacing: 0.5px; vertical-align: middle;">TỔNG KẾT:</td>
+                <td style="vertical-align: middle;">
+                    <div style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 2px;">${totalAmount.toLocaleString()} đ</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">(Tổng hóa đơn)</div>
+                </td>
+                <td colspan="3" style="vertical-align: middle;">
+                    <div style="display: flex; gap: 1.5rem; align-items: center;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="color: var(--accent-green); font-weight: 600;">Đã thu: ${paidAmount.toLocaleString()} đ</span>
+                            <span style="font-size: 0.8rem; opacity: 0.7;">(${(totalAmount > 0 ? (paidAmount / totalAmount * 100).toFixed(1) : 0)}%)</span>
+                        </div>
+                        <div style="height: 30px; width: 1px; background: rgba(255,255,255,0.1);"></div>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="color: var(--accent-red); font-weight: 600;">Còn lại: ${pendingAmount.toLocaleString()} đ</span>
+                            <span style="font-size: 0.8rem; opacity: 0.7;">Cần thu gấp</span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
 }
 
 window.exportRevenueReport = () => {

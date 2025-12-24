@@ -176,7 +176,22 @@
                     </button>
                 </div>
 
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                <div
+                    style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; align-items: center;">
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="invoice-search-room" class="premium-filter-input"
+                            placeholder="Tìm phòng...">
+                    </div>
+                    <div class="filter-wrapper">
+                        <i class="fa-solid fa-filter filter-icon"></i>
+                        <select id="invoice-filter-status" class="premium-filter-select">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="pending">Chưa thanh toán</option>
+                            <option value="paid">Đã thanh toán</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                    </div>
                     <div class="filter-wrapper">
                         <i class="fa-solid fa-calendar-days calendar-icon"></i>
                         <select id="invoice-filter-month" class="premium-filter-select">
@@ -206,6 +221,10 @@
                         <tbody id="invoice-list-body">
                             <!-- Invoices will be here -->
                         </tbody>
+                        <tfoot id="invoice-list-footer"
+                            style="background: rgba(255, 255, 255, 0.05); font-weight: bold;">
+                            <!-- Summary will be here -->
+                        </tfoot>
                     </table>
                 </div>
             </div>

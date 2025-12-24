@@ -2163,4 +2163,73 @@ select:focus {
 .premium-form input[readonly] {
     opacity: 0.6;
     cursor: not-allowed;
+}/* Filter & Search Styles */
+.filter-wrapper,
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.premium-filter-select,
+.premium-filter-input {
+    appearance: none;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    padding: 0.6rem 2.5rem 0.6rem 1rem;
+    border-radius: 0.75rem;
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 160px;
+}
+
+.premium-filter-input {
+    padding-left: 2.2rem;
+    /* Space for search icon */
+    padding-right: 1rem;
+    cursor: text;
+}
+
+.premium-filter-select:hover,
+.premium-filter-input:hover,
+.premium-filter-input:focus {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(59, 130, 246, 0.5);
+    outline: none;
+}
+
+.filter-wrapper .chevron-icon,
+.filter-wrapper .calendar-icon,
+.filter-wrapper .filter-icon {
+    position: absolute;
+    color: var(--text-secondary);
+    pointer-events: none;
+    font-size: 0.9rem;
+}
+
+.filter-wrapper .chevron-icon {
+    right: 1rem;
+}
+
+.filter-wrapper .calendar-icon,
+.filter-wrapper .filter-icon {
+    left: 1rem;
+    display: none;
+    /* Hide leading icons if padding doesn't accommodate, or adjust padding */
+}
+
+/* Adjust padding if we want leading icons */
+.premium-filter-select.with-icon {
+    padding-left: 2.5rem;
+}
+
+.search-wrapper .search-icon {
+    position: absolute;
+    left: 0.8rem;
+    color: var(--text-secondary);
+    pointer-events: none;
+    font-size: 0.9rem;
 }
