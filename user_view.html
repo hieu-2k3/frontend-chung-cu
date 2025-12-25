@@ -760,6 +760,7 @@
         }
 
         window.openPrivateChat = function (partnerId, partnerName) {
+            console.log('openPrivateChat called:', { partnerId, partnerName });
             currentChatPartnerId = partnerId;
 
             // Validate self-chat
@@ -776,6 +777,10 @@
 
             // Open Widget & Load
             const widget = document.getElementById('chat-widget');
+            if (!widget) {
+                console.error('Chat widget not found!');
+                return;
+            }
             widget.classList.remove('hidden');
             document.querySelector('.notification-dot').style.display = 'none';
             loadMessages();
@@ -1123,7 +1128,12 @@
                 }
 
                 // Render user cards
-                container.innerHTML = allResidents.map(resident => `
+                container.innerHTML = allResidents.map(resident => {
+                    // Escape special characters for onclick
+                    const escapedName = resident.name.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                    const escapedPhone = resident.phoneLogin.replace(/'/g, "\\'");
+
+                    return `
                     <div class="glass-panel" style="padding: 1rem; display: flex; align-items: center; gap: 1rem; transition: var(--transition); cursor: pointer; border: 1px solid rgba(255,255,255,0.1);"
                          onmouseover="this.style.borderColor='rgba(59, 130, 246, 0.5)'; this.style.transform='translateY(-2px)'"
                          onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
@@ -1139,12 +1149,13 @@
                             </div>
                         </div>
                         <button class="btn-primary" 
-                                onclick="event.stopPropagation(); if(window.openPrivateChat) window.openPrivateChat('${resident.phoneLogin}', '${resident.name}')"
+                                onclick="event.stopPropagation(); if(window.openPrivateChat) window.openPrivateChat('${escapedPhone}', '${escapedName}')"
                                 style="padding: 0.5rem 1rem; width: auto; font-size: 0.9rem; white-space: nowrap;">
                             <i class="fa-solid fa-comment-dots"></i> Chat
                         </button>
                     </div>
-                `).join('');
+                `;
+                }).join('');
 
             } catch (error) {
                 console.error("Error loading chat users:", error);
