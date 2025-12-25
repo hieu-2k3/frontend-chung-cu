@@ -350,27 +350,30 @@
             </div>
 
             <!-- Chat/Messaging Section -->
-            <h2 class="section-title" style="margin-top: 3rem;">
-                <i class="fa-solid fa-comments"></i> Nhắn Tin
-            </h2>
-            <div class="glass-panel" style="margin-bottom: 2rem; padding: 1.5rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                        <i class="fa-solid fa-circle-info"></i> Chat với cư dân khác hoặc tham gia chat cộng đồng
-                    </p>
-                    <button class="btn-primary" onclick="toggleChat()" style="width: auto; padding: 0.5rem 1.5rem;">
-                        <i class="fa-solid fa-users"></i> Chat Cộng Đồng
-                    </button>
-                </div>
+            <div id="chat-section-wrapper">
+                <h2 class="section-title" style="margin-top: 3rem;">
+                    <i class="fa-solid fa-comments"></i> Nhắn Tin
+                </h2>
+                <div class="glass-panel" style="margin-bottom: 2rem; padding: 1.5rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                            <i class="fa-solid fa-circle-info"></i> Chat với cư dân khác hoặc tham gia chat cộng đồng
+                        </p>
+                        <button class="btn-primary" onclick="toggleChat()" style="width: auto; padding: 0.5rem 1.5rem;">
+                            <i class="fa-solid fa-users"></i> Chat Cộng Đồng
+                        </button>
+                    </div>
 
-                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-                    <h3 style="color: var(--text-primary); font-size: 1rem; margin-bottom: 1rem;">
-                        <i class="fa-solid fa-user-group"></i> Danh sách cư dân
-                    </h3>
-                    <div id="chat-users-list"
-                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
-                        <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
-                            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
+                    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                        <h3 style="color: var(--text-primary); font-size: 1rem; margin-bottom: 1rem;">
+                            <i class="fa-solid fa-user-group"></i> Danh sách cư dân
+                        </h3>
+                        <div id="chat-users-list"
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                            <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -667,6 +670,15 @@
         let currentChatPartnerId = null; // null = Community Chat
 
         function initChat() {
+            // Check if user has room - if not, hide chat features
+            if (!window.userHasRoom) {
+                const chatFab = document.getElementById('chat-fab');
+                const chatWidget = document.getElementById('chat-widget');
+                if (chatFab) chatFab.style.display = 'none';
+                if (chatWidget) chatWidget.style.display = 'none';
+                return; // Don't initialize chat if user doesn't have a room
+            }
+
             const token = localStorage.getItem('authToken');
             const userStr = localStorage.getItem('currentUser');
             if (!token || !userStr) return;
@@ -1042,7 +1054,23 @@
 
         // Load Chat Users List
         async function loadChatUsers() {
+            const chatSection = document.getElementById('chat-section-wrapper');
             const container = document.getElementById('chat-users-list');
+
+            // Check if user has room assignment
+            if (!window.userHasRoom) {
+                // Hide entire chat section if user doesn't have a room
+                if (chatSection) {
+                    chatSection.style.display = 'none';
+                }
+                return;
+            }
+
+            // Show chat section if user has room
+            if (chatSection) {
+                chatSection.style.display = 'block';
+            }
+
             if (!container) return;
 
             try {
