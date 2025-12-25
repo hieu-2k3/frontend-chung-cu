@@ -1128,13 +1128,11 @@
                 }
 
                 // Render user cards
-                container.innerHTML = allResidents.map(resident => {
-                    // Escape special characters for onclick
-                    const escapedName = resident.name.replace(/'/g, "\\'").replace(/"/g, '\\"');
-                    const escapedPhone = resident.phoneLogin.replace(/'/g, "\\'");
-
+                container.innerHTML = allResidents.map((resident, index) => {
                     return `
-                    <div class="glass-panel" style="padding: 1rem; display: flex; align-items: center; gap: 1rem; transition: var(--transition); cursor: pointer; border: 1px solid rgba(255,255,255,0.1);"
+                    <div class="glass-panel chat-user-card" 
+                         data-user-index="${index}"
+                         style="padding: 1rem; display: flex; align-items: center; gap: 1rem; transition: var(--transition); cursor: pointer; border: 1px solid rgba(255,255,255,0.1);"
                          onmouseover="this.style.borderColor='rgba(59, 130, 246, 0.5)'; this.style.transform='translateY(-2px)'"
                          onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
                         <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem; flex-shrink: 0;">
@@ -1148,14 +1146,41 @@
                                 <i class="fa-solid fa-door-open"></i> Phòng ${resident.roomName}
                             </div>
                         </div>
-                        <button class="btn-primary" 
-                                onclick="event.stopPropagation(); if(window.openPrivateChat) window.openPrivateChat('${escapedPhone}', '${escapedName}')"
+                        <button class="btn-primary chat-btn" 
+                                data-phone="${resident.phoneLogin}"
+                                data-name="${resident.name}"
+                                data-index="${index}"
                                 style="padding: 0.5rem 1rem; width: auto; font-size: 0.9rem; white-space: nowrap;">
                             <i class="fa-solid fa-comment-dots"></i> Chat
                         </button>
                     </div>
                 `;
                 }).join('');
+
+                // Add event listeners to all chat buttons after rendering
+                setTimeout(() => {
+                    const chatButtons = container.querySelectorAll('.chat-btn');
+                    console.log('Found chat buttons:', chatButtons.length);
+
+                    chatButtons.forEach((btn, idx) => {
+                        btn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            e.preventDefault();
+
+                            const phone = this.getAttribute('data-phone');
+                            const name = this.getAttribute('data-name');
+                            console.log('Chat button clicked:', { phone, name, button: this });
+
+                            if (window.openPrivateChat) {
+                                window.openPrivateChat(phone, name);
+                            } else {
+                                console.error('openPrivateChat function not found!');
+                                alert('Tính năng chat chưa sẵn sàng. Vui lòng refresh trang.');
+                            }
+                        });
+                        console.log(`Added listener to button ${idx}`);
+                    });
+                }, 100);
 
             } catch (error) {
                 console.error("Error loading chat users:", error);
